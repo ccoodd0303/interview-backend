@@ -76,7 +76,7 @@ public class InterviewService {
     
     // 개별 문제에 대한 음성 답변을 AI 서버로 전송하여 채점
     public AnswerEvaluationResponse evaluateAnswer(
-            Long userId, String interviewId, Long questionId,
+            String interviewId, Long questionId,
             MultipartFile audioFile) {
         
         Question question = questionRepository.findById(questionId)
@@ -84,10 +84,6 @@ public class InterviewService {
         
         InterviewSession session = sessionRepository.findBySessionId(interviewId)
                 .orElseThrow(() -> new IllegalArgumentException("Session not found"));
-        
-        if (!session.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("Unauthorized session access");
-        }
         
         AiServerResponse aiResponse = aiEvaluationService.evaluateAudio(
                 audioFile, question.getCategory(),

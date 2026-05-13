@@ -39,13 +39,12 @@ public class InterviewController {
     @PostMapping(value = "/{interviewId}/answers",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AnswerEvaluationResponse> evaluateAnswer(
-            @RequestParam("userId") Long userId,
             @PathVariable String interviewId,
             @RequestParam("questionId") Long questionId,
             @RequestPart("audio") MultipartFile audioFile) {
         
         AnswerEvaluationResponse response = interviewService.evaluateAnswer(
-                userId, interviewId, questionId, audioFile
+                interviewId, questionId, audioFile
         );
         return ResponseEntity.ok(response);
     }
