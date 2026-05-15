@@ -40,8 +40,8 @@ public class InterviewController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> evaluateAnswer(
             @PathVariable String interviewId,
-            @RequestPart("userId") String userIdStr,
-            @RequestPart("questionId") String questionIdStr,
+            @RequestPart("userId") String userId,
+            @RequestPart("questionId") String questionId,
             @RequestPart("audio") MultipartFile audioFile) {
         
         try {
@@ -49,18 +49,15 @@ public class InterviewController {
                 throw new IllegalArgumentException("음성 파일이 비어있거나 전송되지 않았습니다.");
             }
 
-            Long userId = Long.parseLong(userIdStr);
-            Long questionId = Long.parseLong(questionIdStr);
-            
             byte[] audioBytes = audioFile.getBytes();
             String filename = audioFile.getOriginalFilename();
             interviewService.evaluateAnswerAsync(
-                    userId, interviewId, questionId, audioBytes, filename
+                    Long.parseLong(userId), interviewId, Long.parseLong(questionId), audioBytes, filename
             );
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
-            log.error("파일 전송/읽기 실패 - interviewId: {}, userId: {}, questionId: {}", interviewId, userIdStr, questionIdStr, e);
+            log.error("파일 전송/읽기 실패 - interviewId: {}, userId: {}, questionId: {}", interviewId, userId, questionId, e);
             throw new IllegalArgumentException("서버에서 음성 파일을 읽는 데 실패했습니다: " + e.getMessage());
         }
         
