@@ -3,16 +3,15 @@ package com.project.backend.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.backend.domain.AnswerLog;
 import com.project.backend.dto.response.AiServerResponse;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Duration;
 import java.util.List;
@@ -41,10 +40,10 @@ public class AiEvaluationService {
     
     // 음성 파일과 문제 정보를 AI 서버로 전송하고 채점 결과 받기
     public AiServerResponse evaluateAudio(
-            MultipartFile audioFile, String category, String questionText, List<String> targetKeywords) {
+            Resource audioResource, String category, String questionText, List<String> targetKeywords) {
         try {
             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-            body.add("audioFile", audioFile.getResource());
+            body.add("audioFile", audioResource);
             body.add("category", category);
             body.add("question", questionText);
             if (targetKeywords != null && !targetKeywords.isEmpty()) {
@@ -60,7 +59,7 @@ public class AiEvaluationService {
             
         } catch (Exception e) {
             log.error("AI 서버 통신 중 오류 발생: {}", e.getMessage());
-            throw new RuntimeException("Unexpected error");
+            throw new RuntimeException("AI 서버 통신 중 오류가 발생했습니다.");
         }
     }
     
@@ -86,7 +85,7 @@ public class AiEvaluationService {
             
         } catch (Exception e) {
             log.error("AI 서버 총평 요청 중 오류 발생: {}", e.getMessage());
-            throw new RuntimeException("Unexpected error");
+            throw new RuntimeException("AI 서버 통신 중 오류가 발생했습니다.");
         }
     }
 }

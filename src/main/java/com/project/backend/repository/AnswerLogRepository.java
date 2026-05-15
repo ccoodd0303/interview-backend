@@ -15,4 +15,6 @@ public interface AnswerLogRepository extends JpaRepository<AnswerLog, Long> {
     List<AnswerLog> findByInterviewSession_SessionIdOrderByCreatedAtAsc(
             @Param("sessionId") String sessionId
     );
+    
+    void deleteByInterviewSession_SessionId(String sessionId);
 }

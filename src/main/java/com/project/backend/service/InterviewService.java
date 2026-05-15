@@ -1,38 +1,21 @@
 package com.project.backend.service;
 
-import com.project.backend.domain.AnswerLog;
-import com.project.backend.domain.InterviewSession;
-import com.project.backend.domain.Question;
-import com.project.backend.domain.ReviewState;
-import com.project.backend.domain.SessionStatus;
-import com.project.backend.domain.User;
-import com.project.backend.dto.request.AnswerSubmitRequest;
-import com.project.backend.dto.response.AiServerResponse;
-import com.project.backend.dto.response.AnswerEvaluationResponse;
-import com.project.backend.dto.response.InterviewDetailResponse;
-import com.project.backend.dto.response.InterviewStartResponse;
-import com.project.backend.dto.response.InterviewSummaryResponse;
-import com.project.backend.dto.response.QuestionDetailResponse;
-import com.project.backend.dto.response.QuestionResponse;
-import com.project.backend.repository.AnswerLogRepository;
-import com.project.backend.repository.InterviewSessionRepository;
-import com.project.backend.repository.QuestionRepository;
-import com.project.backend.repository.ReviewStateRepository;
-import com.project.backend.repository.UserRepository;
+import com.project.backend.domain.*;
+import com.project.backend.dto.response.*;
+import com.project.backend.repository.*;
 import com.project.backend.util.Sm2Algorithm;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -52,7 +35,7 @@ public class InterviewService {
     @Transactional
     public InterviewStartResponse startInterview(Long userId, String category) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         
         sessionRepository.deleteByUserIdAndStatus(
                 userId, SessionStatus.IN_PROGRESS);
@@ -67,26 +50,39 @@ public class InterviewService {
                 questionService.getQuestionsByCategory(userId, category);
         
         if (questions == null || questions.isEmpty()) {
-            throw new IllegalArgumentException("No questions found");
+            throw new IllegalArgumentException("해당 카테고리의 질문을 찾을 수 없습니다.");
         }
         
         return new InterviewStartResponse(sessionId, category, questions);
     }
     
     
-    // 개별 문제에 대한 음성 답변을 AI 서버로 전송하여 채점
-    public AnswerEvaluationResponse evaluateAnswer(
-            String interviewId, Long questionId,
-            MultipartFile audioFile) {
+    // 개별 문제에 대한 음성 답변을 비동기로 AI 서버에 전송하여 채점 후 DB 저장
+    @Async
+    @Transactional
+    public void evaluateAnswerAsync(
+            Long userId, String interviewId, Long questionId,
+            byte[] audioBytes, String filename) {
         
         Question question = questionRepository.findById(questionId)
-                .orElseThrow(() -> new IllegalArgumentException("Question not found"));
+                .orElseThrow(() -> new IllegalArgumentException("질문을 찾을 수 없습니다."));
         
         InterviewSession session = sessionRepository.findBySessionId(interviewId)
-                .orElseThrow(() -> new IllegalArgumentException("Session not found"));
+                .orElseThrow(() -> new IllegalArgumentException("면접 세션을 찾을 수 없습니다."));
+        
+        if (!session.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("잘못된 면접 세션 접근입니다.");
+        }
+        
+        Resource audioResource = new ByteArrayResource(audioBytes) {
+            @Override
+            public String getFilename() {
+                return filename;
+            }
+        };
         
         AiServerResponse aiResponse = aiEvaluationService.evaluateAudio(
-                audioFile, question.getCategory(),
+                audioResource, question.getCategory(),
                 question.getQuestionText(), question.getTargetKeywords());
         
         String transcribed = aiResponse.transcribedAnswer();
@@ -97,45 +93,40 @@ public class InterviewService {
             score = 0;
         }
         
-        return new AnswerEvaluationResponse(
-                questionId, transcribed, score,
-                aiResponse.feedback(), aiResponse.missingKeywords());
+        AnswerLog log = AnswerLog.builder()
+                .question(question)
+                .userAnswer(transcribed)
+                .aiFeedback(aiResponse.feedback())
+                .score(score)
+                .interviewSession(session)
+                .missingKeywords(aiResponse.missingKeywords())
+                .build();
+                
+        answerLogRepository.save(log);
     }
     
     
-    // 면접 완료 시 답변 기록을 일괄 저장하고 AI 서버에 전달해서 총평 받기
+    // 면접 완료 시 저장된 답변 기록을 바탕으로 AI 서버에 전달해서 총평 받기
     @Transactional
-    public InterviewSummaryResponse completeInterview(
-            String interviewId, List<AnswerSubmitRequest> answers) {
+    public InterviewDetailResponse completeInterview(String interviewId) {
         
         InterviewSession session = sessionRepository.findBySessionId(interviewId)
-                .orElseThrow(() -> new IllegalArgumentException("Session not found"));
+                .orElseThrow(() -> new IllegalArgumentException("면접 세션을 찾을 수 없습니다."));
         
-        List<Long> questionIds = answers.stream()
-                .map(AnswerSubmitRequest::questionId).toList();
-        Map<Long, Question> questionMap = questionRepository.findAllById(questionIds)
-                .stream().collect(Collectors.toMap(Question::getId, q -> q));
-        
-        List<AnswerLog> answerLogsToSave = answers.stream().map(ans -> {
-            Question question = questionMap.get(ans.questionId());
-            return AnswerLog.builder()
-                    .question(question)
-                    .userAnswer(ans.transcribedAnswer())
-                    .aiFeedback(ans.feedback())
-                    .score(ans.score())
-                    .interviewSession(session)
-                    .missingKeywords(ans.missingKeywords())
-                    .build();
-        }).toList();
+        List<AnswerLog> answerLogsToSave = answerLogRepository
+                .findByInterviewSession_SessionIdOrderByCreatedAtAsc(interviewId);
+                
+        if (answerLogsToSave.isEmpty()) {
+            throw new IllegalArgumentException("해당 세션에 제출된 답변이 없습니다.");
+        }
         
         String overallFeedback = aiEvaluationService.getOverallSummary(answerLogsToSave);
         
-        answerLogRepository.saveAll(answerLogsToSave);
+        int avgScore = (int) Math.round(answerLogsToSave.stream()
+                .filter(log -> log.getScore() != null)
+                .mapToInt(AnswerLog::getScore).average().orElse(0));
         
-        int avgScore = (int) Math.round(answers.stream()
-                .mapToInt(AnswerSubmitRequest::score).average().orElse(0));
-        
-        // 면접 세션을 완료 상태로 변경하고
+        // 면접 세션을 완료 상태로 변경
         session.complete(avgScore, overallFeedback);
         
         // 복습 주기 갱신
@@ -144,10 +135,36 @@ public class InterviewService {
         
         String date = session.getCreatedAt()
                 .format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
+                
+        // 10문제 상세 결과 반환
+        int totalQuestions = answerLogsToSave.size();
+        int excellentCount = (int) answerLogsToSave.stream()
+                .filter(log -> log.getScore() != null && log.getScore() >= 80)
+                .count();
+                
+        List<QuestionDetailResponse> results = answerLogsToSave.stream().map(log ->
+                new QuestionDetailResponse(
+                        log.getQuestion().getId(),
+                        log.getQuestion().getQuestionText(),
+                        log.getUserAnswer(),
+                        log.getScore(),
+                        log.getAiFeedback(),
+                        log.getMissingKeywords()
+                )
+        ).toList();
         
-        return new InterviewSummaryResponse(
+        return new InterviewDetailResponse(
                 session.getSessionId(), session.getCategory(),
-                date, avgScore, overallFeedback);
+                date, avgScore, totalQuestions, excellentCount, results);
+    }
+    
+    // 면접 세션 중단 및 관련 데이터 삭제
+    @Transactional
+    public void deleteSession(String interviewId) {
+        InterviewSession session = sessionRepository.findBySessionId(interviewId)
+                .orElseThrow(() -> new IllegalArgumentException("면접 세션을 찾을 수 없습니다."));
+        answerLogRepository.deleteByInterviewSession_SessionId(interviewId);
+        sessionRepository.delete(session);
     }
     
     
@@ -156,7 +173,7 @@ public class InterviewService {
     public InterviewDetailResponse getInterviewResult(String interviewId) {
         
         InterviewSession session = sessionRepository.findBySessionId(interviewId)
-                .orElseThrow(() -> new IllegalArgumentException("Session not found"));
+                .orElseThrow(() -> new IllegalArgumentException("면접 세션을 찾을 수 없습니다."));
         
         List<AnswerLog> logs = answerLogRepository
                 .findByInterviewSession_SessionIdOrderByCreatedAtAsc(interviewId);

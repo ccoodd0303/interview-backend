@@ -18,7 +18,7 @@ public class AuthService {
     @Transactional
     public void register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("Duplicate email");
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
         
         User newUser = User.builder()
@@ -32,10 +32,10 @@ public class AuthService {
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new IllegalArgumentException("Unauthorized"));
+                .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 일치하지 않습니다."));
         
         if (!request.password().equals(user.getPassword())) {
-            throw new IllegalArgumentException("Unauthorized");
+            throw new IllegalArgumentException("이메일 또는 비밀번호가 일치하지 않습니다.");
         }
         
         return new LoginResponse(user.getId(), user.getNickname());

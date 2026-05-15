@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 
 @Entity
@@ -72,7 +73,7 @@ public class ReviewState {
         
         // 갱신 날짜가 없으면 잘못된 요청으로 처리
         if (now == null) {
-            throw new IllegalArgumentException("Validation failed");
+            throw new IllegalArgumentException("갱신 날짜가 누락되었습니다.");
         }
         this.repetitionCount = repetitionCount;
         this.easinessFactor = easinessFactor;
