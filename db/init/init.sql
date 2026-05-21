@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS interview_session (
     category VARCHAR(50) NOT NULL,
     avg_score INT,
     overall_feedback TEXT,
+    avg_duration INT,
     status VARCHAR(20) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
@@ -37,6 +38,7 @@ CREATE TABLE IF NOT EXISTS answer_log (
     score INT,
     session_id BIGINT NOT NULL REFERENCES interview_session(id),
     missing_keywords JSONB,
+    duration INT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -56,11 +58,11 @@ CREATE TABLE IF NOT EXISTS review_state (
 -- 2. 초기 데이터 삽입 (DML)
 -- ==========================================
 
--- 테스트 유저 1명 삽입
+-- 테스트 유저 1명 삽입 (비밀번호: test1234!)
 INSERT INTO users (email, password, nickname, created_at) VALUES
-    ('test@example.com', 'test1234!', '테스터', NOW());
+    ('test@example.com', '$2a$10$EYyaykoEbC5QWhBOdSjJ9uLjAcRxkpRtfLW58EYGunFMm8vLjvBWy', '테스터', NOW());
 
--- 질문 데이터 삽입 (40개)
+-- 질문 데이터 전수 삽입 (40개 전체 복원)
 INSERT INTO question (category, question_text, target_keywords) VALUES
                                                                     ('os', '프로세스와 스레드의 차이를 설명해주세요.', '["독립된 메모리 영역(Code, Data, Stack, Heap)", "자원 공유", "Context Switching 오버헤드"]'::jsonb),
                                                                     ('os', '교착상태(Deadlock)의 발생 조건 4가지를 설명해주세요.', '["상호 배제(Mutual Exclusion)", "점유 대기", "비선점", "순환 대기(Circular Wait)"]'::jsonb),
@@ -106,33 +108,33 @@ INSERT INTO question (category, question_text, target_keywords) VALUES
                                                                     ('ds', '트라이(Trie) 자료구조의 특징과 사용 사례를 설명해주세요.', '["문자열 검색", "접두사(Prefix)", "자동 완성", "메모리 사용량"]'::jsonb),
                                                                     ('ds', '시간복잡도 Big-O 표기법을 설명하고 예시를 들어주세요.', '["시간/공간 복잡도", "최악의 상황", "점근적 표기", "데이터 규모에 따른 증가율"]'::jsonb);
 
+-- 면접 세션 데이터 삽입 (avg_duration을 180초로 세팅하여 DTO 변환 시 3분(avgTimeMin: 3)이 출력되도록 연동)
+-- 개행문자(\n)를 주입하여 프론트엔드가 요구하는 다중 피드백 배열 파싱 규격을 완벽 지원
+INSERT INTO interview_session (session_id, user_id, category, avg_score, overall_feedback, avg_duration, status, created_at) VALUES
+    ('1e894e17-98ab-4bf2-8488-5ca0bd039826', 1, 'os', 84, '전반적으로 운영체제 기본 개념 이해도가 좋습니다.\n답변에 예시를 조금 더 추가하면 더 좋을 것 같습니다.', 180, 'COMPLETED', NOW());
 
--- 면접 세션 1회 완료 데이터 삽입
-INSERT INTO interview_session (session_id, user_id, category, avg_score, overall_feedback, status, created_at) VALUES
-    ('test-session-uuid-1234-5678', 1, 'os', 82, '전반적으로 운영체제의 핵심 개념을 잘 이해하고 있습니다. 특히 프로세스와 동기화 부분의 설명이 훌륭했습니다.', 'COMPLETED', NOW());
+-- 프론트엔드 시연 화면과 100% 매칭되는 개별 문항 결과 로그 적재
+INSERT INTO answer_log (question_id, user_answer, ai_feedback, score, session_id, missing_keywords, duration, created_at) VALUES
+                                                                                                                              (1, '프로세스는 독립된 메모리 공간을 가지고…', '프로세스와 스레드 차이를 잘 설명했습니다.', 88, 1, '["컨텍스트 스위칭"]'::jsonb, 35, NOW()),
+                                                                                                                              (2, '상호 배제, 점유 대기, 비선점, 그리고 순환 대기 4가지가 있습니다.', '정확한 4가지 조건을 모두 잘 설명하셨습니다.', 100, 1, '[]'::jsonb, 40, NOW()),
+                                                                                                                              (3, '페이징은 고정 크기로 나누고 외부 단편화를 해결합니다.', '핵심 차이를 짚었으나 내부 단편화 내용이 추가되면 좋겠습니다.', 85, 1, '["내부 단편화", "논리적 단위"]'::jsonb, 50, NOW()),
+                                                                                                                              (4, 'FCFS, SJF, 라운드 로빈 등이 있습니다.', '주요 알고리즘을 언급했으나 선점형과 비선점형 구분이 부족합니다.', 70, 1, '["Priority", "Preemptive(선점/비선점)"]'::jsonb, 42, NOW()),
+                                                                                                                              (5, 'CPU가 다른 프로세스로 넘어갈 때 상태를 저장/복구하는 과정입니다.', 'PCB와 상태 저장/복구 개념을 정확히 이해하고 있습니다.', 90, 1, '["오버헤드"]'::jsonb, 38, NOW()),
+                                                                                                                              (6, '큰 프로그램을 실행하기 위해 사용하며, 페이지 테이블을 이용합니다.', '요구 페이징과 MMU에 대한 언급을 추가하면 완벽합니다.', 80, 1, '["요구 페이징(Demand Paging)", "MMU"]'::jsonb, 60, NOW()),
+                                                                                                                              (7, '인터럽트는 하드웨어, 시스템 콜은 소프트웨어에서 커널을 호출합니다.', '정확한 비교입니다. 커널 모드 전환 설명도 좋습니다.', 95, 1, '["권한 대행"]'::jsonb, 47, NOW()),
+                                                                                                                              (8, '최근에 사용된 데이터나 그 근처 데이터가 다시 사용될 확률입니다.', '시간/공간 지역성이라는 전문 용어를 사용하면 더 좋습니다.', 75, 1, '["시간 지역성(Temporal)", "공간 지역성(Spatial)", "적중률(Hit ratio)"]'::jsonb, 51, NOW()),
+                                                                                                                              (9, '뮤텍스는 하나의 스레드만…', '기본 개념은 맞지만 활용 예시가 부족합니다.', 76, 1, '["임계영역"]'::jsonb, 40, NOW()),
+                                                                                                                              (10, '여러 프로세스가 공유 자원에 접근할 때 일관성을 유지하기 위함입니다.', '경쟁 상태와 임계 영역이라는 키워드가 들어가면 완벽합니다.', 82, 1, '["임계 영역(Critical Section)", "경쟁 상태(Race Condition)"]'::jsonb, 47, NOW());
 
--- 답변 로그 10개 삽입
-INSERT INTO answer_log (question_id, user_answer, ai_feedback, score, session_id, missing_keywords, created_at) VALUES
-                                                                                                                    (1, '프로세스는 실행 중인 프로그램이고, 스레드는 프로세스 내 흐름입니다.', '독립된 메모리 영역에 대한 설명이 부족합니다.', 75, 1, '["독립된 메모리 영역(Code, Data, Stack, Heap)", "Context Switching 오버헤드"]'::jsonb, NOW()),
-                                                                                                                    (2, '상호 배제, 점유 대기, 비선점, 그리고 순환 대기 4가지가 있습니다.', '정확한 4가지 조건을 모두 잘 설명하셨습니다.', 100, 1, '[]'::jsonb, NOW()),
-                                                                                                                    (3, '페이징은 고정 크기로 나누고 외부 단편화를 해결합니다.', '핵심 차이를 짚었으나 내부 단편화 내용이 추가되면 좋겠습니다.', 85, 1, '["내부 단편화", "논리적 단위"]'::jsonb, NOW()),
-                                                                                                                    (4, 'FCFS, SJF, 라운드 로빈 등이 있습니다.', '주요 알고리즘을 언급했으나 선점형과 비선점형 구분이 부족합니다.', 70, 1, '["Priority", "Preemptive(선점/비선점)"]'::jsonb, NOW()),
-                                                                                                                    (5, 'CPU가 다른 프로세스로 넘어갈 때 상태를 저장/복구하는 과정입니다.', 'PCB와 상태 저장/복구 개념을 정확히 이해하고 있습니다.', 90, 1, '["오버헤드"]'::jsonb, NOW()),
-                                                                                                                    (6, '큰 프로그램을 실행하기 위해 사용하며, 페이지 테이블을 이용합니다.', '요구 페이징과 MMU에 대한 언급을 추가하면 완벽합니다.', 80, 1, '["요구 페이징(Demand Paging)", "MMU"]'::jsonb, NOW()),
-                                                                                                                    (7, '인터럽트는 하드웨어, 시스템 콜은 소프트웨어에서 커널을 호출합니다.', '정확한 비교입니다. 커널 모드 전환 설명도 좋습니다.', 95, 1, '["권한 대행"]'::jsonb, NOW()),
-                                                                                                                    (8, '최근에 사용된 데이터나 그 근처 데이터가 다시 사용될 확률입니다.', '시간/공간 지역성이라는 전문 용어를 사용하면 더 좋습니다.', 75, 1, '["시간 지역성(Temporal)", "공간 지역성(Spatial)", "적중률(Hit ratio)"]'::jsonb, NOW()),
-                                                                                                                    (9, '뮤텍스는 1개만 접근 가능하고, 세마포어는 여러 개가 접근 가능합니다.', '바이너리 세마포어와의 관계성 설명이 누락되었습니다.', 70, 1, '["Binary Semaphore", "Locking/Unlocking"]'::jsonb, NOW()),
-                                                                                                                    (10, '여러 프로세스가 공유 자원에 접근할 때 일관성을 유지하기 위함입니다.', '경쟁 상태와 임계 영역이라는 키워드가 들어가면 완벽합니다.', 80, 1, '["임계 영역(Critical Section)", "경쟁 상태(Race Condition)"]'::jsonb, NOW());
-
--- 복습 상태 삽입
+-- 복습 주기 알고리즘 테이블 매핑 데이터 생성
 INSERT INTO review_state (user_id, question_id, repetition_count, easiness_factor, current_interval, next_review_date, last_reviewed_at) VALUES
-                                                                                                                                             (1, 1, 0, 2.36, 1, CURRENT_DATE + INTERVAL '1 day', CURRENT_DATE),
-                                                                                                                                             (1, 2, 1, 2.6,  1, CURRENT_DATE + INTERVAL '1 day', CURRENT_DATE),
-                                                                                                                                             (1, 3, 1, 2.5,  1, CURRENT_DATE + INTERVAL '1 day', CURRENT_DATE),
+                                                                                                                                             (1, 1, 1, 2.50, 1, CURRENT_DATE + INTERVAL '1 day', CURRENT_DATE),
+                                                                                                                                             (1, 2, 1, 2.60, 1, CURRENT_DATE + INTERVAL '1 day', CURRENT_DATE),
+                                                                                                                                             (1, 3, 1, 2.50, 1, CURRENT_DATE + INTERVAL '1 day', CURRENT_DATE),
                                                                                                                                              (1, 4, 0, 2.36, 1, CURRENT_DATE + INTERVAL '1 day', CURRENT_DATE),
-                                                                                                                                             (1, 5, 1, 2.6,  1, CURRENT_DATE + INTERVAL '1 day', CURRENT_DATE),
-                                                                                                                                             (1, 6, 1, 2.5,  1, CURRENT_DATE + INTERVAL '1 day', CURRENT_DATE),
-                                                                                                                                             (1, 7, 1, 2.6,  1, CURRENT_DATE + INTERVAL '1 day', CURRENT_DATE),
+                                                                                                                                             (1, 5, 1, 2.60, 1, CURRENT_DATE + INTERVAL '1 day', CURRENT_DATE),
+                                                                                                                                             (1, 6, 1, 2.50, 1, CURRENT_DATE + INTERVAL '1 day', CURRENT_DATE),
+                                                                                                                                             (1, 7, 1, 2.60, 1, CURRENT_DATE + INTERVAL '1 day', CURRENT_DATE),
                                                                                                                                              (1, 8, 0, 2.36, 1, CURRENT_DATE + INTERVAL '1 day', CURRENT_DATE),
-                                                                                                                                             (1, 9, 0, 2.36, 1, CURRENT_DATE + INTERVAL '1 day', CURRENT_DATE),
-                                                                                                                                             (1, 10, 1, 2.5,  1, CURRENT_DATE + INTERVAL '1 day', CURRENT_DATE);
+                                                                                                                                             (1, 9, 1, 2.40, 1, CURRENT_DATE + INTERVAL '1 day', CURRENT_DATE),
+                                                                                                                                             (1, 10, 1, 2.50, 1, CURRENT_DATE + INTERVAL '1 day', CURRENT_DATE);

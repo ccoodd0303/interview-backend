@@ -8,6 +8,7 @@ public record QuestionDetailResponse(
         String question,
         String answer,
         Integer score,
+        Integer duration,
         String feedback,
-        List<String> missingKeywords
+        List<String> keywords
 ) {}

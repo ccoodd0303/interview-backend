@@ -2,20 +2,17 @@ package com.project.backend.controller;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.project.backend.dto.request.InterviewStartRequest;
 import com.project.backend.dto.response.InterviewDetailResponse;
 import com.project.backend.dto.response.InterviewStartResponse;
 import com.project.backend.service.InterviewService;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,36 +37,44 @@ public class InterviewController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> evaluateAnswer(
             @PathVariable String interviewId,
-            @RequestPart("userId") String userId,
-            @RequestPart("questionId") String questionId,
+            @RequestParam("userId") String userId,
+            @RequestParam("questionId") String questionId,
             @RequestPart("audio") MultipartFile audioFile) {
         
         try {
             if (audioFile == null || audioFile.isEmpty()) {
                 throw new IllegalArgumentException("음성 파일이 비어있거나 전송되지 않았습니다.");
             }
-
+            
             byte[] audioBytes = audioFile.getBytes();
             String filename = audioFile.getOriginalFilename();
             interviewService.evaluateAnswerAsync(
-                    Long.parseLong(userId), interviewId, Long.parseLong(questionId), audioBytes, filename
+                    Long.parseLong(userId), interviewId,
+                    Long.parseLong(questionId),
+                    audioBytes, filename
             );
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
-            log.error("파일 전송/읽기 실패 - interviewId: {}, userId: {}, questionId: {}", interviewId, userId, questionId, e);
+            log.error("파일 전송/읽기 실패 - interviewId: {}, userId: {}, questionId: {}",
+                    interviewId, userId, questionId, e);
             throw new IllegalArgumentException("서버에서 음성 파일을 읽는 데 실패했습니다: " + e.getMessage());
         }
         
         return ResponseEntity.ok().build();
     }
     
-    // 면접 완료
+    // 면접 완료 요청
     @PostMapping("/{interviewId}/complete")
     public ResponseEntity<InterviewDetailResponse> completeInterview(
             @PathVariable String interviewId) {
-        return ResponseEntity.ok(interviewService.completeInterview(interviewId));
+        
+        InterviewDetailResponse response =
+                interviewService.completeInterview(interviewId);
+        
+        return ResponseEntity.ok(response);
     }
+    
     
     // 중단한 면접 제거
     @DeleteMapping("/{interviewId}")

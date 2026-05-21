@@ -6,6 +6,7 @@ import com.project.backend.dto.request.RegisterRequest;
 import com.project.backend.dto.response.LoginResponse;
 import com.project.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.mindrot.jbcrypt.BCrypt; // BCrypt 라이브러리 임포트
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,9 +22,11 @@ public class AuthService {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
         
+        String hashedPassword = BCrypt.hashpw(request.password(), BCrypt.gensalt());
+        
         User newUser = User.builder()
                 .email(request.email())
-                .password(request.password())
+                .password(hashedPassword) // 암호화된 비밀번호 저장
                 .nickname(request.nickname())
                 .build();
         userRepository.save(newUser);
@@ -34,7 +37,7 @@ public class AuthService {
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 일치하지 않습니다."));
         
-        if (!request.password().equals(user.getPassword())) {
+        if (!BCrypt.checkpw(request.password(), user.getPassword())) {
             throw new IllegalArgumentException("이메일 또는 비밀번호가 일치하지 않습니다.");
         }
         

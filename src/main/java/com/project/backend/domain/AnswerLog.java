@@ -42,19 +42,23 @@ public class AnswerLog {
     @Column(columnDefinition = "jsonb")
     private List<String> missingKeywords;
     
+    @Column
+    private Integer duration;
+    
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
     
     @Builder
     private AnswerLog(Question question, String userAnswer, String aiFeedback,
                       Integer score, InterviewSession interviewSession,
-                      List<String> missingKeywords) {
+                      List<String> missingKeywords, Integer duration) {
         this.question = question;
         this.userAnswer = userAnswer;
         this.aiFeedback = aiFeedback;
         this.score = score;
         this.interviewSession = interviewSession;
         this.missingKeywords = missingKeywords;
+        this.duration = duration;
     }
     
     @PrePersist

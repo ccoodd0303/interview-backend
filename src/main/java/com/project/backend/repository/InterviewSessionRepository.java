@@ -13,5 +13,4 @@ public interface InterviewSessionRepository extends JpaRepository<InterviewSessi
     
     Optional<InterviewSession> findBySessionId(String sessionId);
     
-    void deleteByUserIdAndStatus(Long userId, SessionStatus status);
 }

@@ -4,14 +4,21 @@ import com.project.backend.domain.*;
 import com.project.backend.dto.response.*;
 import com.project.backend.repository.*;
 import com.project.backend.util.Sm2Algorithm;
+import com.project.backend.util.AudioDurationUtil;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
+
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -31,7 +38,6 @@ public class InterviewService {
     private final ReviewStateRepository reviewStateRepository;
     private final QuestionService questionService;
     private final TransactionTemplate transactionTemplate;
-    
     
     // 새로운 면접 세션을 생성하고 지정된 카테고리의 문제를 출제
     @Transactional
@@ -75,77 +81,89 @@ public class InterviewService {
             throw new IllegalArgumentException("잘못된 면접 세션 접근입니다.");
         }
         
-        Resource audioResource = new ByteArrayResource(audioBytes) {
-            @Override
-            public String getFilename() {
-                return filename;
+        Path tempPath = null;
+        try {
+            // 임시 파일 생성
+            String suffix = (filename != null && filename.contains(".")) ?
+                    filename.substring(filename.lastIndexOf(".")) : ".tmp";
+            
+            tempPath = Files.createTempFile("interview_", suffix);
+            Files.write(tempPath, audioBytes);
+            
+            // 오디오 파일 길이 측정
+            int duration = AudioDurationUtil.extractDuration(tempPath);
+            
+            // AI 서버로 파일 전송
+            Resource audioResource = new FileSystemResource(tempPath.toFile());
+            
+            AiServerResponse aiResponse = aiEvaluationService.evaluateAudio(
+                    audioResource, question.getCategory(),
+                    question.getQuestionText(), question.getTargetKeywords());
+            
+            String transcribed = aiResponse.transcribedAnswer();
+            Integer score = aiResponse.score();
+            
+            if (transcribed == null || transcribed.trim().isEmpty()) {
+                transcribed = "(응답 없음)";
+                score = 0;
             }
-        };
-        
-        AiServerResponse aiResponse = aiEvaluationService.evaluateAudio(
-                audioResource, question.getCategory(),
-                question.getQuestionText(), question.getTargetKeywords());
-        
-        String transcribed = aiResponse.transcribedAnswer();
-        Integer score = aiResponse.score();
-        
-        if (transcribed == null || transcribed.trim().isEmpty()) {
-            transcribed = "(응답 없음)";
-            score = 0;
+            
+            List<String> missingKeywords = aiResponse.missingKeywords();
+            if (missingKeywords == null) {
+                missingKeywords = java.util.List.of();
+            }
+            
+            final String confirmedTranscribed = transcribed;
+            final Integer confirmedScore = score;
+            final List<String> confirmedMissingKeywords = missingKeywords;
+            
+            // DB에 문제 결과 저장
+            transactionTemplate.executeWithoutResult(status -> {
+                InterviewSession activeSession = sessionRepository
+                        .findBySessionId(interviewId).orElseThrow();
+                
+                AnswerLog log = AnswerLog.builder()
+                        .question(question)
+                        .userAnswer(confirmedTranscribed)
+                        .aiFeedback(aiResponse.feedback())
+                        .score(confirmedScore)
+                        .interviewSession(activeSession)
+                        .missingKeywords(confirmedMissingKeywords)
+                        .duration(duration)
+                        .build();
+                
+                answerLogRepository.save(log);
+            });
+            
+        } catch (Exception e) {
+            log.error("AI 평가 비동기 처리 중 예외 발생", e);
+        } finally {
+            // 비동기 작업 종료 후 디스크 청소
+            if (tempPath != null) {
+                try {
+                    Files.deleteIfExists(tempPath);
+                } catch (IOException ignored) {
+                }
+            }
         }
-        
-        final String finalTranscribed = transcribed;
-        final Integer finalScore = score;
-        
-        transactionTemplate.executeWithoutResult(status -> {
-            InterviewSession activeSession = sessionRepository.findBySessionId(interviewId).orElseThrow();
-            
-            AnswerLog log = AnswerLog.builder()
-                    .question(question)
-                    .userAnswer(finalTranscribed)
-                    .aiFeedback(aiResponse.feedback())
-                    .score(finalScore)
-                    .interviewSession(activeSession)
-                    .missingKeywords(aiResponse.missingKeywords())
-                    .build();
-            
-            answerLogRepository.save(log);
-        });
     }
     
-    // 면접 완료 시 저장된 답변 기록을 바탕으로 AI 서버에 전달해서 총평 받기
+    // 면접 완료 시 AI 서버에 전달해서 총평 받기
     public InterviewDetailResponse completeInterview(String interviewId) {
         
         InterviewSession session = sessionRepository.findBySessionId(interviewId)
                 .orElseThrow(() -> new IllegalArgumentException("면접 세션을 찾을 수 없습니다."));
         
-        List<AnswerLog> answerLogsToSave = List.of();
-        int maxAttempts = 10;
-        int attempts = 0;
-        
-        while (attempts < maxAttempts) {
-            answerLogsToSave = answerLogRepository
-                    .findByInterviewSession_SessionIdOrderByCreatedAtAsc(interviewId);
-            
-            if (answerLogsToSave.size() >= QuestionService.SESSION_SIZE) {
-                break;
-            }
-            
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new IllegalStateException("서버 완료 대기 중 오류 발생");
-            }
-            attempts++;
-        }
+        List<AnswerLog> answerLogsToSave = answerLogRepository
+                .findByInterviewSession_SessionIdOrderByCreatedAtAsc(interviewId);
         
         if (answerLogsToSave.isEmpty()) {
             throw new IllegalArgumentException("해당 세션에 제출된 답변이 없습니다.");
         }
         
+        // 10문항 채점이 아직 다 끝나지 않았다면 재시도 요청
         if (answerLogsToSave.size() < QuestionService.SESSION_SIZE) {
-            throw new IllegalStateException("현재 일부 답변이 채점 중입니다. 잠시 후 다시 시도해주세요.");
+            throw new IllegalStateException("아직 모든 답변의 AI 채점이 완료되지 않았습니다.");
         }
         
         String overallFeedback = aiEvaluationService.getOverallSummary(answerLogsToSave);
@@ -154,13 +172,17 @@ public class InterviewService {
                 .filter(log -> log.getScore() != null)
                 .mapToInt(AnswerLog::getScore).average().orElse(0));
         
-        final List<AnswerLog> finalLogs = answerLogsToSave;
+        int avgDuration = (int) Math.round(answerLogsToSave.stream()
+                .filter(log -> log.getDuration() != null)
+                .mapToInt(AnswerLog::getDuration).average().orElse(0));
+        
+        final List<AnswerLog> targetAnswerLogs = answerLogsToSave;
         
         transactionTemplate.executeWithoutResult(status -> {
             InterviewSession activeSession = sessionRepository.findBySessionId(interviewId).orElseThrow();
-            activeSession.complete(avgScore, overallFeedback);
+            activeSession.complete(avgScore, overallFeedback, avgDuration);
             
-            finalLogs.forEach(log ->
+            targetAnswerLogs.forEach(log ->
                     updateReviewState(activeSession.getUser(), log.getQuestion(), log.getScore()));
         });
         
@@ -178,14 +200,21 @@ public class InterviewService {
                         log.getQuestion().getQuestionText(),
                         log.getUserAnswer(),
                         log.getScore(),
+                        log.getDuration(),
                         log.getAiFeedback(),
                         log.getMissingKeywords()
                 )
         ).toList();
         
+        List<String> feedbackList = overallFeedback != null ?
+                java.util.Arrays.stream(overallFeedback.split("\n"))
+                        .filter(s -> !s.trim().isEmpty())
+                        .toList() : java.util.List.of();
+        
         return new InterviewDetailResponse(
                 session.getSessionId(), session.getCategory(),
-                date, avgScore, totalQuestions, excellentCount, results);
+                date, avgScore, totalQuestions, excellentCount,
+                avgDuration / 60, feedbackList, results);
     }
     
     // 복습 화면과 세부 결과창에 쓸 데이터 처리
@@ -209,6 +238,7 @@ public class InterviewService {
                         log.getQuestion().getQuestionText(),
                         log.getUserAnswer(),
                         log.getScore(),
+                        log.getDuration(),
                         log.getAiFeedback(),
                         log.getMissingKeywords()
                 )
@@ -217,10 +247,16 @@ public class InterviewService {
         String date = session.getCreatedAt()
                 .format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
         
+        List<String> feedbackList = session.getOverallFeedback() != null ?
+                java.util.Arrays.stream(session.getOverallFeedback().split("\n"))
+                        .filter(s -> !s.trim().isEmpty())
+                        .toList() : java.util.List.of();
+        
         return new InterviewDetailResponse(
                 session.getSessionId(), session.getCategory(),
                 date, session.getAvgScore(),
-                totalQuestions, excellentCount, results);
+                totalQuestions, excellentCount,
+                (session.getAvgDuration() != null ? session.getAvgDuration() : 0) / 60, feedbackList, results);
     }
     
     // 문제 채점 결과로 다음 복습 주기를 갱신
@@ -255,10 +291,7 @@ public class InterviewService {
     public void deleteSession(String interviewId) {
         InterviewSession session = sessionRepository.findBySessionId(interviewId)
                 .orElseThrow(() -> new IllegalArgumentException("면접 세션을 찾을 수 없습니다."));
-        // 자식인 answer_log 테이블 먼저 안전하게 삭제 (FK 제약조건 충족)
         answerLogRepository.deleteByInterviewSession_SessionId(interviewId);
-        // 부모인 interview_session 테이블 삭제
         sessionRepository.delete(session);
     }
 }
-

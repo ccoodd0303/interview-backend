@@ -34,6 +34,9 @@ public class InterviewSession {
     @Column(columnDefinition = "TEXT")
     private String overallFeedback;
     
+    @Column
+    private Integer avgDuration;
+    
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private SessionStatus status = SessionStatus.IN_PROGRESS;
@@ -55,9 +58,10 @@ public class InterviewSession {
     }
     
     // 면접 완료 처리
-    public void complete(Integer avgScore, String overallFeedback) {
+    public void complete(Integer avgScore, String overallFeedback, Integer avgDuration) {
         this.avgScore = avgScore;
         this.overallFeedback = overallFeedback;
+        this.avgDuration = avgDuration;
         this.status = SessionStatus.COMPLETED;
     }
 }

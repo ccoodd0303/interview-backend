@@ -10,5 +10,7 @@ public record InterviewDetailResponse(
         Integer avgScore,
         Integer totalQuestions,
         Integer excellentCount,
+        Integer avgTimeMin,
+        List<String> feedback,
         List<QuestionDetailResponse> results
 ) {}
