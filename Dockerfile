@@ -1,8 +1,21 @@
 FROM eclipse-temurin:21-jdk-jammy AS build
 WORKDIR /app
-COPY . .
-RUN chmod +x ./gradlew
-RUN ./gradlew bootJar -x test
+
+
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle .
+COPY settings.gradle .
+
+
+RUN chmod +x ./gradlew && \
+    ./gradlew dependencies --no-daemon -Dorg.gradle.jvmargs="-Xmx384m"
+
+
+COPY src src
+
+RUN ./gradlew bootJar -x test --no-daemon -Dorg.gradle.jvmargs="-Xmx384m"
+
 
 FROM eclipse-temurin:21-jdk-jammy
 RUN apt-get update && \
