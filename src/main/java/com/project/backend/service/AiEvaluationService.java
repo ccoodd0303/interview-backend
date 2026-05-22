@@ -68,7 +68,7 @@ public class AiEvaluationService {
         try {
             List<Map<String, Object>> answers = logs.stream()
                     .map(log -> Map.<String, Object>of(
-                            "question", log.getQuestion().getQuestionText(),
+                            "question", log.getQuestion().getTitle(),
                             "answer", log.getUserAnswer() != null ? log.getUserAnswer() : "",
                             "score", log.getScore() != null ? log.getScore() : 0
                     ))

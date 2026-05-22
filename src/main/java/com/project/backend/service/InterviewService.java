@@ -98,7 +98,7 @@ public class InterviewService {
             
             AiServerResponse aiResponse = aiEvaluationService.evaluateAudio(
                     audioResource, question.getCategory(),
-                    question.getQuestionText(), question.getTargetKeywords());
+                    question.getTitle(), question.getTargetKeywords());
             
             String transcribed = aiResponse.transcribedAnswer();
             Integer score = aiResponse.score();
@@ -197,7 +197,7 @@ public class InterviewService {
         List<QuestionDetailResponse> results = answerLogsToSave.stream().map(log ->
                 new QuestionDetailResponse(
                         log.getQuestion().getId(),
-                        log.getQuestion().getQuestionText(),
+                        log.getQuestion().getTitle(),
                         log.getUserAnswer(),
                         log.getScore(),
                         log.getDuration(),
@@ -235,7 +235,7 @@ public class InterviewService {
         List<QuestionDetailResponse> results = logs.stream().map(log ->
                 new QuestionDetailResponse(
                         log.getQuestion().getId(),
-                        log.getQuestion().getQuestionText(),
+                        log.getQuestion().getTitle(),
                         log.getUserAnswer(),
                         log.getScore(),
                         log.getDuration(),

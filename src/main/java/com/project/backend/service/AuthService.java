@@ -26,7 +26,7 @@ public class AuthService {
         
         User newUser = User.builder()
                 .email(request.email())
-                .password(hashedPassword) // 암호화된 비밀번호 저장
+                .password_hash(hashedPassword) // 암호화된 비밀번호 저장
                 .nickname(request.nickname())
                 .build();
         userRepository.save(newUser);
@@ -37,7 +37,7 @@ public class AuthService {
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 일치하지 않습니다."));
         
-        if (!BCrypt.checkpw(request.password(), user.getPassword())) {
+        if (!BCrypt.checkpw(request.password(), user.getPassword_hash())) {
             throw new IllegalArgumentException("이메일 또는 비밀번호가 일치하지 않습니다.");
         }
         

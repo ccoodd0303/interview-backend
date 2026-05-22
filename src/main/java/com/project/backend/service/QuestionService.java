@@ -95,7 +95,7 @@ public class QuestionService {
                 .map(q -> new QuestionResponse(
                         q.getId(),
                         q.getCategory(),
-                        q.getQuestionText()
+                        q.getTitle()
                 ))
                 .toList();
     }

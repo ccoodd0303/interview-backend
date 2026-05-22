@@ -22,7 +22,7 @@ public class User {
     private String email;
     
     @Column(nullable = false, length = 68)
-    private String password;
+    private String password_hash;
     
     @Column(nullable = false, length = 10)
     private String nickname;
@@ -36,9 +36,9 @@ public class User {
     }
     
     @Builder
-    private User(String email, String password, String nickname) {
+    private User(String email, String password_hash, String nickname) {
         this.email = email;
-        this.password = password;
+        this.password_hash = password_hash;
         this.nickname = nickname;
     }
 }

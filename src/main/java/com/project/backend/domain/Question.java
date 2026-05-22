@@ -5,36 +5,51 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "question", indexes = @Index(name = "idx_category", columnList = "category"))
+@Table(name = "questions")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Question {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    @Column(nullable = false, length = 50)
-    private String category;
-    
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String questionText;
-    
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private List<String> targetKeywords;
-    
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subject_id")
+    private Subject subject;
+
+    @Column(name = "title", nullable = false, columnDefinition = "TEXT")
+    private String title;
+
+    @Column(name = "ideal_answer", nullable = false, columnDefinition = "TEXT")
+    private String idealAnswer;
+
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QuestionKeyword> keywords = new ArrayList<>();
+
+    @Column(name = "difficulty")
+    private Integer difficulty = 3;
 
     @Builder
-    private Question(String category, String questionText, List<String> targetKeywords) {
-        this.category = category;
-        this.questionText = questionText;
-        this.targetKeywords = targetKeywords;
+    private Question(Subject subject, String title, String idealAnswer, Integer difficulty) {
+        this.subject = subject;
+        this.title = title;
+        this.idealAnswer = idealAnswer;
+        this.difficulty = (difficulty != null) ? difficulty : 3;
+    }
+
+    public String getCategory() {
+        return this.subject != null ? this.subject.getName() : "미분류";
+    }
+
+    public List<String> getTargetKeywords() {
+        if (this.keywords == null) return List.of();
+        return this.keywords.stream()
+                .map(QuestionKeyword::getKeyword)
+                .toList();
     }
 }
