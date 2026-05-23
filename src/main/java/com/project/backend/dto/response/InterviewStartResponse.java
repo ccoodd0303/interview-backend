@@ -4,6 +4,6 @@ import java.util.List;
 
 public record InterviewStartResponse(
         String interviewId,
-        String category,
+        String subject,
         List<QuestionResponse> questions
 ) {}

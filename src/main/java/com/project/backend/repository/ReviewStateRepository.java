@@ -12,6 +12,6 @@ public interface ReviewStateRepository extends JpaRepository<ReviewState, Long> 
     
     Optional<ReviewState> findByUserIdAndQuestionId(Long userId, Long questionId);
     
-    @Query("SELECT rs FROM ReviewState rs JOIN FETCH rs.question WHERE rs.user.id = :userId AND rs.question.category = :category")
-    List<ReviewState> findByUserIdAndQuestionCategory(@Param("userId") Long userId, @Param("category") String category);
+    @Query("SELECT rs FROM ReviewState rs JOIN FETCH rs.question WHERE rs.user.id = :userId AND rs.question.subject.name = :subject")
+    List<ReviewState> findByUserIdAndQuestionSubject(@Param("userId") Long userId, @Param("subject") String subject);
 }

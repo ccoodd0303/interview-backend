@@ -24,14 +24,14 @@ public class DashboardController {
         return ResponseEntity.ok(dashboardService.getUserDashboard(userId));
     }
     
-    // 복습하기에서 카테고리 눌렀을 때 카테고리별 면접 이력 리스트 출력하기 위한 데이터 처리
-    @GetMapping("/{userId}/interviews/category")
-    public ResponseEntity<List<DashboardHistoryResponse>> getInterviewsByCategory(
+    // 복습하기에서 과목 눌렀을 때 과목별 면접 이력 리스트 출력하기 위한 데이터 처리
+    @GetMapping("/{userId}/interviews/subject")
+    public ResponseEntity<List<DashboardHistoryResponse>> getInterviewsBySubject(
             @PathVariable Long userId,
-            @RequestParam("category") String category) {
+            @RequestParam("subject") String subject) {
         
         return ResponseEntity.ok(
-                dashboardService.getInterviewsByCategory(userId, category)
+                dashboardService.getInterviewsBySubject(userId, subject)
         );
     }
 }

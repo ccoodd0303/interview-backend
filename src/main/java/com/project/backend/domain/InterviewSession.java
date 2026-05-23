@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "interview_session")
@@ -26,7 +28,7 @@ public class InterviewSession {
     private User user;
     
     @Column(nullable = false, length = 50)
-    private String category;
+    private String subject;
     
     @Column
     private Integer avgScore;
@@ -44,11 +46,14 @@ public class InterviewSession {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
     
+    @OneToMany(mappedBy = "interviewSession", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<AnswerLog> answerLogs = new ArrayList<>();
+    
     @Builder
-    private InterviewSession(String sessionId, User user, String category) {
+    private InterviewSession(String sessionId, User user, String subject) {
         this.sessionId = sessionId;
         this.user = user;
-        this.category = category;
+        this.subject = subject;
         this.status = SessionStatus.IN_PROGRESS;
     }
     

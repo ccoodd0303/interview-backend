@@ -40,11 +40,11 @@ public class AiEvaluationService {
     
     // 음성 파일과 문제 정보를 AI 서버로 전송하고 채점 결과 받기
     public AiServerResponse evaluateAudio(
-            Resource audioResource, String category, String questionText, List<String> targetKeywords) {
+            Resource audioResource, String subject, String questionText, List<String> targetKeywords) {
         try {
             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
             body.add("audioFile", audioResource);
-            body.add("category", category);
+            body.add("subject", subject);
             body.add("question", questionText);
             if (targetKeywords != null && !targetKeywords.isEmpty()) {
                 body.add("target_keywords", objectMapper.writeValueAsString(targetKeywords));

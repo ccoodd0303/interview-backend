@@ -23,16 +23,16 @@ public class QuestionService {
     public static final int SESSION_SIZE = 10;
     
     
-    // 카테고리의 문제들을 복습 알고리즘(SM-2) 우선순위에 따라 출제
+    // 과목의 문제들을 복습 알고리즘(SM-2) 우선순위에 따라 출제
     @Transactional(readOnly = true)
-    public List<QuestionResponse> getQuestionsByCategory(
-            Long userId, String category) {
+    public List<QuestionResponse> getQuestionsBySubject(
+            Long userId, String subject) {
         
         List<Question> availableQuestions =
-                questionRepository.findByCategory(category);
+                questionRepository.findBySubjectName(subject);
         
         List<ReviewState> reviewStates = reviewStateRepository
-                .findByUserIdAndQuestionCategory(userId, category);
+                .findByUserIdAndQuestionSubject(userId, subject);
         
         Map<Long, ReviewState> reviewStateMap = reviewStates.stream()
                 .collect(Collectors.toMap(
@@ -94,7 +94,7 @@ public class QuestionService {
         return finalQueue.stream()
                 .map(q -> new QuestionResponse(
                         q.getId(),
-                        q.getCategory(),
+                        q.getSubjectName(),
                         q.getTitle()
                 ))
                 .toList();

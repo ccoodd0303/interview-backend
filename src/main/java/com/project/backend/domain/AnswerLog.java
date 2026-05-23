@@ -5,11 +5,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "answer_log")
@@ -25,10 +22,10 @@ public class AnswerLog {
     @JoinColumn(name = "question_id", nullable = false)
     private Question question;
     
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(name = "user_answer", nullable = false, columnDefinition = "TEXT")
     private String userAnswer;
     
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(name = "ai_feedback", nullable = false, columnDefinition = "TEXT")
     private String aiFeedback;
     
     @Column
@@ -38,26 +35,34 @@ public class AnswerLog {
     @JoinColumn(name = "session_id", nullable = false)
     private InterviewSession interviewSession;
     
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private List<String> missingKeywords;
+    @Column(name = "missing_keywords", length = 255)
+    private String missingKeywords;
+
+    @Column(name = "matched_keywords", length = 255)
+    private String matchedKeywords;
+
+    @Column(name = "captured_image_path", length = 255)
+    private String capturedImagePath;
     
     @Column
     private Integer duration;
     
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     
     @Builder
     private AnswerLog(Question question, String userAnswer, String aiFeedback,
                       Integer score, InterviewSession interviewSession,
-                      List<String> missingKeywords, Integer duration) {
+                      String missingKeywords, String matchedKeywords,
+                      String capturedImagePath, Integer duration) {
         this.question = question;
         this.userAnswer = userAnswer;
         this.aiFeedback = aiFeedback;
         this.score = score;
         this.interviewSession = interviewSession;
         this.missingKeywords = missingKeywords;
+        this.matchedKeywords = matchedKeywords;
+        this.capturedImagePath = capturedImagePath;
         this.duration = duration;
     }
     

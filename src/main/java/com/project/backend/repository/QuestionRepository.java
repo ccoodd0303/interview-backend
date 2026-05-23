@@ -8,8 +8,8 @@ import java.util.List;
 
 public interface QuestionRepository extends JpaRepository<Question, Long> {
     
-    List<Question> findByCategory(String category);
+    List<Question> findBySubjectName(String subject);
     
-    @Query("SELECT DISTINCT q.category FROM Question q")
-    List<String> findDistinctCategories();
+    @Query("SELECT DISTINCT q.subject.name FROM Question q")
+    List<String> findDistinctSubjects();
 }

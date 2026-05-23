@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "question_keywords")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class QuestionKeyword {
+public class Keyword {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,14 +20,14 @@ public class QuestionKeyword {
     @JoinColumn(name = "question_id")
     private Question question;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "keyword", nullable = false, length = 100)
     private String keyword;
 
     @Column(name = "weight")
     private Integer weight = 1;
 
     @Builder
-    private QuestionKeyword(Question question, String keyword, Integer weight) {
+    private Keyword(Question question, String keyword, Integer weight) {
         this.question = question;
         this.keyword = keyword;
         this.weight = (weight != null) ? weight : 1;

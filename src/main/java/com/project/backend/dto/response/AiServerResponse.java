@@ -13,5 +13,11 @@ public record AiServerResponse(
         String transcribedAnswer,
         
         @JsonProperty("missing_keywords")
-        List<String> missingKeywords
+        List<String> missingKeywords,
+
+        @JsonProperty("matched_keywords")
+        List<String> matchedKeywords,
+
+        @JsonProperty("captured_image_path")
+        String capturedImagePath
 ) {}

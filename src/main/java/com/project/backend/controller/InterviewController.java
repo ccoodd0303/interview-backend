@@ -9,6 +9,9 @@ import com.project.backend.dto.request.InterviewStartRequest;
 import com.project.backend.dto.response.InterviewDetailResponse;
 import com.project.backend.dto.response.InterviewStartResponse;
 import com.project.backend.service.InterviewService;
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +32,7 @@ public class InterviewController {
     public ResponseEntity<InterviewStartResponse> startInterview(
             @RequestBody InterviewStartRequest req) {
         return ResponseEntity.ok(interviewService.startInterview(
-                req.userId(), req.category()));
+                req.userId(), req.subject()));
     }
     
     // 음성 답변 제출
@@ -41,21 +44,34 @@ public class InterviewController {
             @RequestParam("questionId") String questionId,
             @RequestPart("audio") MultipartFile audioFile) {
         
+        Path tempPath = null;
         try {
             if (audioFile == null || audioFile.isEmpty()) {
                 throw new IllegalArgumentException("음성 파일이 비어있거나 전송되지 않았습니다.");
             }
             
-            byte[] audioBytes = audioFile.getBytes();
             String filename = audioFile.getOriginalFilename();
+            String suffix = (filename != null && filename.contains(".")) ?
+                    filename.substring(filename.lastIndexOf(".")) : ".tmp";
+            
+            tempPath = Files.createTempFile("interview_", suffix);
+            audioFile.transferTo(tempPath.toFile());
+            
             interviewService.evaluateAnswerAsync(
                     Long.parseLong(userId), interviewId,
                     Long.parseLong(questionId),
-                    audioBytes, filename
+                    tempPath
             );
-        } catch (IllegalArgumentException e) {
-            throw e;
         } catch (Exception e) {
+            if (tempPath != null) {
+                try {
+                    Files.deleteIfExists(tempPath);
+                } catch (IOException ignored) {
+                }
+            }
+            if (e instanceof IllegalArgumentException) {
+                throw (IllegalArgumentException) e;
+            }
             log.error("파일 전송/읽기 실패 - interviewId: {}, userId: {}, questionId: {}",
                     interviewId, userId, questionId, e);
             throw new IllegalArgumentException("서버에서 음성 파일을 읽는 데 실패했습니다: " + e.getMessage());

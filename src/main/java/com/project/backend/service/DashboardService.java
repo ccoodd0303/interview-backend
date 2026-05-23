@@ -35,22 +35,22 @@ public class DashboardService {
                 .findByUserIdAndStatusOrderByCreatedAtDesc(
                         userId, SessionStatus.COMPLETED);
         
-        List<String> categories = questionRepository.findDistinctCategories();
+        List<String> subjects = questionRepository.findDistinctSubjects();
         
         Map<String, Integer> recentScores = new LinkedHashMap<>();
         List<DashboardHistoryResponse> recentReviews = new ArrayList<>();
         
-        // 카테고리별 가장 최근 면접 1건 추려내기
-        for (String category : categories) {
+        // 과목별 가장 최근 면접 1건 추려내기
+        for (String subject : subjects) {
             allSessions.stream()
-                    .filter(session -> session.getCategory().equals(category))
+                    .filter(session -> session.getSubject().equals(subject))
                     .findFirst()
                     .ifPresent(session -> {
-                        recentScores.put(category, session.getAvgScore());
+                        recentScores.put(subject, session.getAvgScore());
                         
                         recentReviews.add(new DashboardHistoryResponse(
                                 session.getSessionId(),
-                                session.getCategory(),
+                                session.getSubject(),
                                 session.getCreatedAt().format(FORMATTER),
                                 QuestionService.SESSION_SIZE,
                                 session.getAvgScore() != null ?
@@ -58,34 +58,34 @@ public class DashboardService {
                         ));
                     });
             
-            recentScores.putIfAbsent(category, null);
+            recentScores.putIfAbsent(subject, null);
         }
         
         return new DashboardResponse(
                 allSessions.size(), // 총 응시 횟수
-                categories.size(), // 선택 가능 주제
+                subjects.size(), // 선택 가능 주제
                 recentScores, // 면접 주제 선택창의 최근 점수
                 recentReviews // 복습하기 창의 최근 면접 이력
         );
     }
     
-    // 복습하기의 카테고리 리스트 화면으로 이동할 때
-    // 해당 카테고리의 면접 이력을 출력하기 위한 데이터 처리
+    // 복습하기의 과목 리스트 화면으로 이동할 때
+    // 해당 과목의 면접 이력을 출력하기 위한 데이터 처리
     @Transactional(readOnly = true)
-    public List<DashboardHistoryResponse> getInterviewsByCategory(
-            Long userId, String category) {
+    public List<DashboardHistoryResponse> getInterviewsBySubject(
+            Long userId, String subject) {
         
         // 완료된 면접 이력 전부 불러와서
         List<InterviewSession> sessions = sessionRepository
                 .findByUserIdAndStatusOrderByCreatedAtDesc(
                         userId, SessionStatus.COMPLETED);
         
-        // 카테고리에 해당하는 것만 추리기
+        // 과목에 해당하는 것만 추리기
         return sessions.stream()
-                .filter(session -> session.getCategory().equals(category))
+                .filter(session -> session.getSubject().equals(subject))
                 .map(session -> new DashboardHistoryResponse(
                         session.getSessionId(),
-                        session.getCategory(),
+                        session.getSubject(),
                         session.getCreatedAt().format(FORMATTER),
                         QuestionService.SESSION_SIZE,
                         session.getAvgScore() != null ? session.getAvgScore() : 0

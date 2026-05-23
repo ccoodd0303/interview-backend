@@ -29,7 +29,7 @@ public class Question {
     private String idealAnswer;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<QuestionKeyword> keywords = new ArrayList<>();
+    private List<Keyword> keywords = new ArrayList<>();
 
     @Column(name = "difficulty")
     private Integer difficulty = 3;
@@ -42,14 +42,14 @@ public class Question {
         this.difficulty = (difficulty != null) ? difficulty : 3;
     }
 
-    public String getCategory() {
+    public String getSubjectName() {
         return this.subject != null ? this.subject.getName() : "미분류";
     }
 
     public List<String> getTargetKeywords() {
         if (this.keywords == null) return List.of();
         return this.keywords.stream()
-                .map(QuestionKeyword::getKeyword)
+                .map(Keyword::getKeyword)
                 .toList();
     }
 }

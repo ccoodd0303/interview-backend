@@ -22,6 +22,7 @@ import java.nio.file.Path;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,56 +40,48 @@ public class InterviewService {
     private final QuestionService questionService;
     private final TransactionTemplate transactionTemplate;
     
-    // 새로운 면접 세션을 생성하고 지정된 카테고리의 문제를 출제
+    // 새로운 면접 세션을 생성하고 지정된 과목의 문제를 출제
     @Transactional
-    public InterviewStartResponse startInterview(Long userId, String category) {
+    public InterviewStartResponse startInterview(Long userId, String subject) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         
         List<InterviewSession> inProgressSessions = sessionRepository
                 .findByUserIdAndStatusOrderByCreatedAtDesc(userId, SessionStatus.IN_PROGRESS);
         
-        inProgressSessions.forEach(session -> deleteSession(session.getSessionId()));
+        sessionRepository.deleteAll(inProgressSessions);
         
         String sessionId = UUID.randomUUID().toString();
         InterviewSession session = InterviewSession.builder()
-                .sessionId(sessionId).user(user).category(category).build();
+                .sessionId(sessionId).user(user).subject(subject).build();
         sessionRepository.save(session);
         
         List<QuestionResponse> questions =
-                questionService.getQuestionsByCategory(userId, category);
+                questionService.getQuestionsBySubject(userId, subject);
         
         if (questions == null || questions.isEmpty()) {
-            throw new IllegalArgumentException("해당 카테고리의 질문을 찾을 수 없습니다.");
+            throw new IllegalArgumentException("해당 과목의 질문을 찾을 수 없습니다.");
         }
         
-        return new InterviewStartResponse(sessionId, category, questions);
+        return new InterviewStartResponse(sessionId, subject, questions);
     }
     
     // 개별 문제에 대한 음성 답변을 비동기로 AI 서버에 전송하여 채점 후 DB 저장
     @Async
     public void evaluateAnswerAsync(
             Long userId, String interviewId, Long questionId,
-            byte[] audioBytes, String filename) {
+            Path tempPath) {
         
-        Question question = questionRepository.findById(questionId)
-                .orElseThrow(() -> new IllegalArgumentException("질문을 찾을 수 없습니다."));
-        
-        InterviewSession session = sessionRepository.findBySessionId(interviewId)
-                .orElseThrow(() -> new IllegalArgumentException("면접 세션을 찾을 수 없습니다."));
-        
-        if (!session.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("잘못된 면접 세션 접근입니다.");
-        }
-        
-        Path tempPath = null;
         try {
-            // 임시 파일 생성
-            String suffix = (filename != null && filename.contains(".")) ?
-                    filename.substring(filename.lastIndexOf(".")) : ".tmp";
+            Question question = questionRepository.findById(questionId)
+                    .orElseThrow(() -> new IllegalArgumentException("질문을 찾을 수 없습니다."));
             
-            tempPath = Files.createTempFile("interview_", suffix);
-            Files.write(tempPath, audioBytes);
+            InterviewSession session = sessionRepository.findBySessionId(interviewId)
+                    .orElseThrow(() -> new IllegalArgumentException("면접 세션을 찾을 수 없습니다."));
+            
+            if (!session.getUser().getId().equals(userId)) {
+                throw new IllegalArgumentException("잘못된 면접 세션 접근입니다.");
+            }
             
             // 오디오 파일 길이 측정
             int duration = AudioDurationUtil.extractDuration(tempPath);
@@ -97,7 +90,7 @@ public class InterviewService {
             Resource audioResource = new FileSystemResource(tempPath.toFile());
             
             AiServerResponse aiResponse = aiEvaluationService.evaluateAudio(
-                    audioResource, question.getCategory(),
+                    audioResource, question.getSubjectName(),
                     question.getTitle(), question.getTargetKeywords());
             
             String transcribed = aiResponse.transcribedAnswer();
@@ -108,14 +101,13 @@ public class InterviewService {
                 score = 0;
             }
             
-            List<String> missingKeywords = aiResponse.missingKeywords();
-            if (missingKeywords == null) {
-                missingKeywords = java.util.List.of();
-            }
+            String missingKeywords = joinKeywords(aiResponse.missingKeywords());
+            String matchedKeywords = joinKeywords(aiResponse.matchedKeywords());
             
             final String confirmedTranscribed = transcribed;
             final Integer confirmedScore = score;
-            final List<String> confirmedMissingKeywords = missingKeywords;
+            final String confirmedMissingKeywords = missingKeywords;
+            final String confirmedMatchedKeywords = matchedKeywords;
             
             // DB에 문제 결과 저장
             transactionTemplate.executeWithoutResult(status -> {
@@ -129,6 +121,8 @@ public class InterviewService {
                         .score(confirmedScore)
                         .interviewSession(activeSession)
                         .missingKeywords(confirmedMissingKeywords)
+                        .matchedKeywords(confirmedMatchedKeywords)
+                        .capturedImagePath(aiResponse.capturedImagePath())
                         .duration(duration)
                         .build();
                 
@@ -150,7 +144,6 @@ public class InterviewService {
     
     // 면접 완료 시 AI 서버에 전달해서 총평 받기
     public InterviewDetailResponse completeInterview(String interviewId) {
-        
         InterviewSession session = sessionRepository.findBySessionId(interviewId)
                 .orElseThrow(() -> new IllegalArgumentException("면접 세션을 찾을 수 없습니다."));
         
@@ -202,7 +195,7 @@ public class InterviewService {
                         log.getScore(),
                         log.getDuration(),
                         log.getAiFeedback(),
-                        log.getMissingKeywords()
+                        splitKeywords(log.getMissingKeywords())
                 )
         ).toList();
         
@@ -212,7 +205,7 @@ public class InterviewService {
                         .toList() : java.util.List.of();
         
         return new InterviewDetailResponse(
-                session.getSessionId(), session.getCategory(),
+                session.getSessionId(), session.getSubject(),
                 date, avgScore, totalQuestions, excellentCount,
                 avgDuration / 60, feedbackList, results);
     }
@@ -240,7 +233,7 @@ public class InterviewService {
                         log.getScore(),
                         log.getDuration(),
                         log.getAiFeedback(),
-                        log.getMissingKeywords()
+                        splitKeywords(log.getMissingKeywords())
                 )
         ).toList();
         
@@ -253,7 +246,7 @@ public class InterviewService {
                         .toList() : java.util.List.of();
         
         return new InterviewDetailResponse(
-                session.getSessionId(), session.getCategory(),
+                session.getSessionId(), session.getSubject(),
                 date, session.getAvgScore(),
                 totalQuestions, excellentCount,
                 (session.getAvgDuration() != null ? session.getAvgDuration() : 0) / 60, feedbackList, results);
@@ -291,7 +284,24 @@ public class InterviewService {
     public void deleteSession(String interviewId) {
         InterviewSession session = sessionRepository.findBySessionId(interviewId)
                 .orElseThrow(() -> new IllegalArgumentException("면접 세션을 찾을 수 없습니다."));
-        answerLogRepository.deleteByInterviewSession_SessionId(interviewId);
         sessionRepository.delete(session);
+    }
+
+    private String joinKeywords(List<String> keywords) {
+        if (keywords == null || keywords.isEmpty()) {
+            return null;
+        }
+        String joined = String.join(", ", keywords);
+        return joined.length() > 255 ? joined.substring(0, 255) : joined;
+    }
+
+    private List<String> splitKeywords(String keywords) {
+        if (keywords == null || keywords.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(keywords.split(","))
+                .map(String::trim)
+                .filter(keyword -> !keyword.isEmpty())
+                .toList();
     }
 }

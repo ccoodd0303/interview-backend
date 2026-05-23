@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -18,17 +20,23 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(name = "username", nullable = false, unique = true, length = 50)
     private String email;
     
-    @Column(nullable = false, length = 68)
-    private String password_hash;
+    @Column(name = "password_hash", nullable = false, length = 255)
+    private String password;
     
-    @Column(nullable = false, length = 10)
+    @Column(name = "name", nullable = false, length = 50)
     private String nickname;
     
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+    
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<InterviewSession> interviewSessions = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<ReviewState> reviewStates = new ArrayList<>();
     
     @PrePersist
     protected void prePersist() {
@@ -36,9 +44,9 @@ public class User {
     }
     
     @Builder
-    private User(String email, String password_hash, String nickname) {
+    private User(String email, String password, String nickname) {
         this.email = email;
-        this.password_hash = password_hash;
+        this.password = password;
         this.nickname = nickname;
     }
 }
