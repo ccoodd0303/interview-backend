@@ -50,10 +50,10 @@ public class InterviewController {
                 throw new IllegalArgumentException("음성 파일이 비어있거나 전송되지 않았습니다.");
             }
             
+            // 오디오 임시 파일 생성 후 서버에 로컬 파일로 저장
             String filename = audioFile.getOriginalFilename();
             String suffix = (filename != null && filename.contains(".")) ?
                     filename.substring(filename.lastIndexOf(".")) : ".tmp";
-            
             tempPath = Files.createTempFile("interview_", suffix);
             audioFile.transferTo(tempPath.toFile());
             

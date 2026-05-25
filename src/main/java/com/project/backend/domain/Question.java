@@ -32,14 +32,14 @@ public class Question {
     private List<Keyword> keywords = new ArrayList<>();
 
     @Column(name = "difficulty")
-    private Integer difficulty = 3;
+    private Short difficulty = (short) 3;
 
     @Builder
-    private Question(Subject subject, String title, String idealAnswer, Integer difficulty) {
+    private Question(Subject subject, String title, String idealAnswer, Short difficulty) {
         this.subject = subject;
         this.title = title;
         this.idealAnswer = idealAnswer;
-        this.difficulty = (difficulty != null) ? difficulty : 3;
+        this.difficulty = (difficulty != null) ? difficulty : (short) 3;
     }
 
     public String getSubjectName() {

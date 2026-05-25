@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
+// ffprobe(FFmpeg 멀티미디어 분석 도구)를 실행하여 오디오의 duration 값을 읽어 재생 길이를 추출
 @Slf4j
 public class AudioDurationUtil {
     
@@ -18,7 +19,7 @@ public class AudioDurationUtil {
         }
         
         try {
-            // ffprobe로 오디오 길이(초) 조회
+            // ffprobe로 오디오 길이 조회
             Process process = new ProcessBuilder(
                     "ffprobe",
                     "-v", "error",
@@ -27,7 +28,6 @@ public class AudioDurationUtil {
                     audioFilePath.toAbsolutePath().toString()
             ).start();
             
-            // 지정 시간 내 종료되지 않으면 프로세스 강제 종료
             if (!process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
                 process.destroyForcibly();
                 return 0;
@@ -38,7 +38,7 @@ public class AudioDurationUtil {
                 
                 String result = reader.readLine();
                 
-                // ffprobe 결과를 초 단위 정수로 변환
+                // 초 단위로 길이 리턴
                 return result == null ? 0 : (int) Double.parseDouble(result);
             }
             

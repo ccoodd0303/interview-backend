@@ -24,12 +24,12 @@ public class Keyword {
     private String keyword;
 
     @Column(name = "weight")
-    private Integer weight = 1;
+    private Short weight = (short) 1;
 
     @Builder
-    private Keyword(Question question, String keyword, Integer weight) {
+    private Keyword(Question question, String keyword, Short weight) {
         this.question = question;
         this.keyword = keyword;
-        this.weight = (weight != null) ? weight : 1;
+        this.weight = (weight != null) ? weight : (short) 1;
     }
 }

@@ -27,7 +27,7 @@ public class InterviewSession {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 100)
     private String subject;
     
     @Column
