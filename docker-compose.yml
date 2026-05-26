@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   db:
-    image: postgres:17
+    image: postgres:18
     container_name: interview-postgres
     environment:
       POSTGRES_DB: interview_db
