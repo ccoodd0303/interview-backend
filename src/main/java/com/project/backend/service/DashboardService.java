@@ -4,6 +4,7 @@ import com.project.backend.domain.InterviewSession;
 import com.project.backend.domain.SessionStatus;
 import com.project.backend.dto.response.DashboardHistoryResponse;
 import com.project.backend.dto.response.DashboardResponse;
+import com.project.backend.dto.response.UserInterviewsResponse;
 import com.project.backend.repository.InterviewSessionRepository;
 import com.project.backend.repository.QuestionRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,36 +27,25 @@ public class DashboardService {
     private static final DateTimeFormatter FORMATTER =
             DateTimeFormatter.ofPattern("yyyy.MM.dd");
     
-    // 메인 화면 전체를 위한 데이터 처리
+    // 메인 화면 대시보드 데이터 처리
     @Transactional(readOnly = true)
-    public DashboardResponse getUserDashboard(Long userId) {
+    public DashboardResponse getUserDashboardStats(Long userId) {
         
-        // 유저의 면접 이력 전부 불러와서
+        // 데이터 조회
         List<InterviewSession> allSessions = sessionRepository
                 .findByUserIdAndStatusOrderByCreatedAtDesc(
                         userId, SessionStatus.COMPLETED);
         
         List<String> subjects = questionRepository.findDistinctSubjects();
         
+        // 최근 점수 계산
         Map<String, Integer> recentScores = new LinkedHashMap<>();
-        List<DashboardHistoryResponse> recentReviews = new ArrayList<>();
-        
-        // 과목별 가장 최근 면접 1건 추려내기
         for (String subject : subjects) {
             allSessions.stream()
                     .filter(session -> session.getSubject().equals(subject))
                     .findFirst()
                     .ifPresent(session -> {
                         recentScores.put(subject, session.getAvgScore());
-                        
-                        recentReviews.add(new DashboardHistoryResponse(
-                                session.getSessionId(),
-                                session.getSubject(),
-                                session.getCreatedAt().format(FORMATTER),
-                                QuestionService.SESSION_SIZE,
-                                session.getAvgScore() != null ?
-                                        session.getAvgScore() : 0
-                        ));
                     });
             
             recentScores.putIfAbsent(subject, null);
@@ -64,9 +54,31 @@ public class DashboardService {
         return new DashboardResponse(
                 allSessions.size(), // 총 응시 횟수
                 subjects.size(), // 선택 가능 주제
-                recentScores, // 면접 주제 선택창의 최근 점수
-                recentReviews // 복습하기 창의 최근 면접 이력
+                recentScores // 면접 주제 선택창의 최근 점수
         );
+    }
+
+    // 복습 페이지 전체 면접 이력 조회
+    @Transactional(readOnly = true)
+    public UserInterviewsResponse getUserInterviews(Long userId) {
+        
+        List<InterviewSession> allSessions = sessionRepository
+                .findByUserIdAndStatusOrderByCreatedAtDesc(
+                        userId, SessionStatus.COMPLETED);
+        
+        // 모든 면접 세션을 복습 이력 DTO로 변환
+        List<DashboardHistoryResponse> records = allSessions.stream()
+                .sorted((a, b) -> a.getCreatedAt().compareTo(b.getCreatedAt()))
+                .map(session -> new DashboardHistoryResponse(
+                        session.getSessionId(),
+                        session.getSubject(),
+                        session.getCreatedAt().format(FORMATTER),
+                        QuestionService.SESSION_SIZE,
+                        session.getAvgScore() != null ? session.getAvgScore() : 0
+                ))
+                .toList();
+
+        return new UserInterviewsResponse(records);
     }
     
     // 복습하기의 과목 리스트 화면으로 이동할 때
