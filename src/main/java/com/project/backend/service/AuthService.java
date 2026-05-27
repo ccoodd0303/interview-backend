@@ -26,7 +26,7 @@ public class AuthService {
         
         User newUser = User.builder()
                 .email(request.email())
-                .password(hashedPassword) // 암호화된 비밀번호 저장
+                .password(hashedPassword)
                 .nickname(request.nickname())
                 .build();
         userRepository.save(newUser);

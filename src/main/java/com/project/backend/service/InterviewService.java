@@ -116,8 +116,8 @@ public class InterviewService {
                         .aiFeedback(aiResponse.feedback())
                         .score(confirmedScore)
                         .interviewSession(activeSession)
-                        .missingKeywords(confirmedMissing) // 변수명 일치 완료
-                        .matchedKeywords(confirmedMatched) // 변수명 일치 완료
+                        .missingKeywords(confirmedMissing)
+                        .matchedKeywords(confirmedMatched)
                         .capturedImagePath(aiResponse.capturedImagePath())
                         .duration(duration)
                         .build();
@@ -191,7 +191,7 @@ public class InterviewService {
                         log.getScore(),
                         log.getDuration(),
                         log.getAiFeedback(),
-                        log.getMissingKeywords() // splitKeywords 제거 완료
+                        log.getMissingKeywords()
                 )
         ).toList();
         
@@ -203,7 +203,9 @@ public class InterviewService {
         return new InterviewDetailResponse(
                 session.getSessionId(), session.getSubject(),
                 date, avgScore, totalQuestions, excellentCount,
-                avgDuration / 60, feedbackList, results);
+                avgDuration / 60,
+                overallFeedback != null ? overallFeedback : "",
+                results);
     }
     
     // 복습할 면접 세션의 10문항을 그대로 출제
@@ -226,7 +228,7 @@ public class InterviewService {
         InterviewSession newSession = InterviewSession.builder()
                 .sessionId(newSessionId)
                 .user(user)
-                .subject(pastLogs.get(0).getQuestion().getSubjectName()) // 기존 과목명 추출
+                .subject(pastLogs.get(0).getQuestion().getSubjectName())
                 .build();
         sessionRepository.save(newSession);
         
@@ -265,7 +267,7 @@ public class InterviewService {
                         log.getScore(),
                         log.getDuration(),
                         log.getAiFeedback(),
-                        log.getMissingKeywords() // splitKeywords 제거 완료
+                        log.getMissingKeywords()
                 )
         ).toList();
         
@@ -281,7 +283,9 @@ public class InterviewService {
                 session.getSessionId(), session.getSubject(),
                 date, session.getAvgScore(),
                 totalQuestions, excellentCount,
-                (session.getAvgDuration() != null ? session.getAvgDuration() : 0) / 60, feedbackList, results);
+                (session.getAvgDuration() != null ? session.getAvgDuration() : 0) / 60,
+                session.getOverallFeedback() != null ? session.getOverallFeedback() : "",
+                results);
     }
     
     // 문제 채점 결과로 다음 복습 주기를 갱신
