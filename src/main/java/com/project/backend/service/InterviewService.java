@@ -22,7 +22,6 @@ import java.nio.file.Path;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -98,13 +97,13 @@ public class InterviewService {
                 score = 0;
             }
             
-            String missingKeywords = joinKeywords(aiResponse.missingKeywords());
-            String matchedKeywords = joinKeywords(aiResponse.matchedKeywords());
+            List<String> missingKeywords = aiResponse.missingKeywords();
+            List<String> matchedKeywords = aiResponse.matchedKeywords();
             
             final String confirmedTranscribed = transcribed;
             final Integer confirmedScore = score;
-            final String confirmedMissingKeywords = missingKeywords;
-            final String confirmedMatchedKeywords = matchedKeywords;
+            final List<String> confirmedMissing = missingKeywords;
+            final List<String> confirmedMatched = matchedKeywords;
             
             // DB에 문제 결과 저장
             transactionTemplate.executeWithoutResult(status -> {
@@ -117,8 +116,8 @@ public class InterviewService {
                         .aiFeedback(aiResponse.feedback())
                         .score(confirmedScore)
                         .interviewSession(activeSession)
-                        .missingKeywords(confirmedMissingKeywords)
-                        .matchedKeywords(confirmedMatchedKeywords)
+                        .missingKeywords(confirmedMissing) // 변수명 일치 완료
+                        .matchedKeywords(confirmedMatched) // 변수명 일치 완료
                         .capturedImagePath(aiResponse.capturedImagePath())
                         .duration(duration)
                         .build();
@@ -192,7 +191,7 @@ public class InterviewService {
                         log.getScore(),
                         log.getDuration(),
                         log.getAiFeedback(),
-                        splitKeywords(log.getMissingKeywords())
+                        log.getMissingKeywords() // splitKeywords 제거 완료
                 )
         ).toList();
         
@@ -207,7 +206,7 @@ public class InterviewService {
                 avgDuration / 60, feedbackList, results);
     }
     
-    // 복습 시 학습 이력에서 똑같은 문제로 세션 생성
+    // 복습할 면접 세션의 10문항을 그대로 출제
     @Transactional
     public InterviewStartResponse retryInterview(Long userId, String pastSessionId) {
         User user = userRepository.findById(userId)
@@ -266,7 +265,7 @@ public class InterviewService {
                         log.getScore(),
                         log.getDuration(),
                         log.getAiFeedback(),
-                        splitKeywords(log.getMissingKeywords())
+                        log.getMissingKeywords() // splitKeywords 제거 완료
                 )
         ).toList();
         
@@ -318,23 +317,5 @@ public class InterviewService {
         InterviewSession session = sessionRepository.findBySessionId(interviewId)
                 .orElseThrow(() -> new IllegalArgumentException("면접 세션을 찾을 수 없습니다."));
         sessionRepository.delete(session);
-    }
-
-    private String joinKeywords(List<String> keywords) {
-        if (keywords == null || keywords.isEmpty()) {
-            return null;
-        }
-        String joined = String.join(", ", keywords);
-        return joined.length() > 255 ? joined.substring(0, 255) : joined;
-    }
-
-    private List<String> splitKeywords(String keywords) {
-        if (keywords == null || keywords.isBlank()) {
-            return List.of();
-        }
-        return Arrays.stream(keywords.split(","))
-                .map(String::trim)
-                .filter(keyword -> !keyword.isEmpty())
-                .toList();
     }
 }

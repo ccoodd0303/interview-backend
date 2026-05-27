@@ -27,21 +27,21 @@ SET default_table_access_method = heap;
 
 --
 -- TOC entry 224 (class 1259 OID 16418)
--- Name: question_keywords; Type: TABLE; Schema: public; Owner: postgres
+-- Name: question_keywords; Type: TABLE; Schema: public; Owner: interview_db_kmnb_user
 --
 
 CREATE TABLE public.question_keywords (
-    id bigint NOT NULL,
-    question_id bigint,
-    keyword character varying(100) NOT NULL,
-    weight smallint DEFAULT 1
+                                          id bigint NOT NULL,
+                                          question_id bigint,
+                                          keyword character varying(100) NOT NULL,
+                                          weight smallint DEFAULT 1
 );
 
-ALTER TABLE public.question_keywords OWNER TO postgres;
+ALTER TABLE public.question_keywords OWNER TO interview_db_kmnb_user;
 
 --
 -- TOC entry 223 (class 1259 OID 16417)
--- Name: question_keywords_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: question_keywords_id_seq; Type: SEQUENCE; Schema: public; Owner: interview_db_kmnb_user
 --
 
 CREATE SEQUENCE public.question_keywords_id_seq
@@ -53,12 +53,12 @@ CREATE SEQUENCE public.question_keywords_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.question_keywords_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.question_keywords_id_seq OWNER TO interview_db_kmnb_user;
 
 --
 -- TOC entry 4964 (class 0 OID 0)
 -- Dependencies: 223
--- Name: question_keywords_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: question_keywords_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: interview_db_kmnb_user
 --
 
 ALTER SEQUENCE public.question_keywords_id_seq OWNED BY public.question_keywords.id;
@@ -66,23 +66,23 @@ ALTER SEQUENCE public.question_keywords_id_seq OWNED BY public.question_keywords
 
 --
 -- TOC entry 222 (class 1259 OID 16400)
--- Name: questions; Type: TABLE; Schema: public; Owner: postgres
+-- Name: questions; Type: TABLE; Schema: public; Owner: interview_db_kmnb_user
 --
 
 CREATE TABLE public.questions (
-    id bigint NOT NULL,
-    subject_id bigint,
-    title text NOT NULL,
-    ideal_answer text NOT NULL,
-    difficulty smallint DEFAULT 3
+                                  id bigint NOT NULL,
+                                  subject_id bigint,
+                                  title text NOT NULL,
+                                  ideal_answer text NOT NULL,
+                                  difficulty smallint DEFAULT 3
 );
 
 
-ALTER TABLE public.questions OWNER TO postgres;
+ALTER TABLE public.questions OWNER TO interview_db_kmnb_user;
 
 --
 -- TOC entry 221 (class 1259 OID 16399)
--- Name: questions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: questions_id_seq; Type: SEQUENCE; Schema: public; Owner: interview_db_kmnb_user
 --
 
 CREATE SEQUENCE public.questions_id_seq
@@ -94,12 +94,12 @@ CREATE SEQUENCE public.questions_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.questions_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.questions_id_seq OWNER TO interview_db_kmnb_user;
 
 --
 -- TOC entry 4965 (class 0 OID 0)
 -- Dependencies: 221
--- Name: questions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: questions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: interview_db_kmnb_user
 --
 
 ALTER SEQUENCE public.questions_id_seq OWNED BY public.questions.id;
@@ -107,21 +107,21 @@ ALTER SEQUENCE public.questions_id_seq OWNED BY public.questions.id;
 
 --
 -- TOC entry 220 (class 1259 OID 16388)
--- Name: subjects; Type: TABLE; Schema: public; Owner: postgres
+-- Name: subjects; Type: TABLE; Schema: public; Owner: interview_db_kmnb_user
 --
 
 CREATE TABLE public.subjects (
-    id bigint NOT NULL,
-    name character varying(255) NOT NULL,
-    CONSTRAINT check_allowed_subjects CHECK (((name)::text = ANY (ARRAY[('소프트웨어 설계/개발'::character varying)::text, ('DB구축'::character varying)::text, ('프로그래밍 언어 활용'::character varying)::text, ('정보시스템 구축 관리'::character varying)::text])))
+                                 id bigint NOT NULL,
+                                 name character varying(255) NOT NULL,
+                                 CONSTRAINT check_allowed_subjects CHECK (((name)::text = ANY (ARRAY[('소프트웨어 설계/개발'::character varying)::text, ('DB구축'::character varying)::text, ('프로그래밍 언어 활용'::character varying)::text, ('정보시스템 구축 관리'::character varying)::text])))
 );
 
 
-ALTER TABLE public.subjects OWNER TO postgres;
+ALTER TABLE public.subjects OWNER TO interview_db_kmnb_user;
 
 --
 -- TOC entry 219 (class 1259 OID 16387)
--- Name: subjects_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: subjects_id_seq; Type: SEQUENCE; Schema: public; Owner: interview_db_kmnb_user
 --
 
 CREATE SEQUENCE public.subjects_id_seq
@@ -133,12 +133,12 @@ CREATE SEQUENCE public.subjects_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.subjects_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.subjects_id_seq OWNER TO interview_db_kmnb_user;
 
 --
 -- TOC entry 4966 (class 0 OID 0)
 -- Dependencies: 219
--- Name: subjects_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: subjects_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: interview_db_kmnb_user
 --
 
 ALTER SEQUENCE public.subjects_id_seq OWNED BY public.subjects.id;
@@ -146,23 +146,23 @@ ALTER SEQUENCE public.subjects_id_seq OWNED BY public.subjects.id;
 
 --
 -- TOC entry 226 (class 1259 OID 16483)
--- Name: users; Type: TABLE; Schema: public; Owner: postgres
+-- Name: users; Type: TABLE; Schema: public; Owner: interview_db_kmnb_user
 --
 
 CREATE TABLE public.users (
-    id bigint NOT NULL,
-    username character varying(50) NOT NULL,
-    password_hash character varying(255) NOT NULL,
-    name character varying(50) NOT NULL,
-    created_at timestamp without time zone DEFAULT now()
+                              id bigint NOT NULL,
+                              username character varying(50) NOT NULL,
+                              password_hash character varying(255) NOT NULL,
+                              name character varying(50) NOT NULL,
+                              created_at timestamp without time zone DEFAULT now()
 );
 
 
-ALTER TABLE public.users OWNER TO postgres;
+ALTER TABLE public.users OWNER TO interview_db_kmnb_user;
 
 --
 -- TOC entry 225 (class 1259 OID 16482)
--- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: interview_db_kmnb_user
 --
 
 CREATE SEQUENCE public.users_id_seq
@@ -174,12 +174,12 @@ CREATE SEQUENCE public.users_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.users_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.users_id_seq OWNER TO interview_db_kmnb_user;
 
 --
 -- TOC entry 4967 (class 0 OID 0)
 -- Dependencies: 225
--- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: interview_db_kmnb_user
 --
 
 ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
@@ -187,22 +187,22 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 --
 -- TOC entry 228 (class 1259 OID 16520)
--- Name: voice_learning_logs; Type: TABLE; Schema: public; Owner: postgres
+-- Name: interview_session; Type: TABLE; Schema: public; Owner: interview_db_kmnb_user
 --
 
 CREATE TABLE public.interview_session (
-    id bigint NOT NULL,
-    session_id character varying(36) NOT NULL,
-    user_id bigint NOT NULL,
-    subject character varying(100) NOT NULL,
-    avg_score integer,
-    overall_feedback text,
-    avg_duration integer,
-    status character varying(20) DEFAULT 'IN_PROGRESS'::character varying NOT NULL,
-    created_at timestamp without time zone DEFAULT now() NOT NULL
+                                          id bigint NOT NULL,
+                                          session_id character varying(36) NOT NULL,
+                                          user_id bigint NOT NULL,
+                                          subject character varying(100) NOT NULL,
+                                          avg_score integer,
+                                          overall_feedback text,
+                                          avg_duration integer,
+                                          status character varying(20) DEFAULT 'IN_PROGRESS'::character varying NOT NULL,
+                                          created_at timestamp without time zone DEFAULT now() NOT NULL
 );
 
-ALTER TABLE public.interview_session OWNER TO postgres;
+ALTER TABLE public.interview_session OWNER TO interview_db_kmnb_user;
 
 CREATE SEQUENCE public.interview_session_id_seq
     AS bigint
@@ -212,24 +212,29 @@ CREATE SEQUENCE public.interview_session_id_seq
     NO MAXVALUE
     CACHE 1;
 
-ALTER SEQUENCE public.interview_session_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.interview_session_id_seq OWNER TO interview_db_kmnb_user;
 ALTER SEQUENCE public.interview_session_id_seq OWNED BY public.interview_session.id;
 
+--
+-- TOC entry 229 (class 1259 OID 16530)
+-- Name: answer_log; Type: TABLE; Schema: public; Owner: interview_db_kmnb_user
+--
+
 CREATE TABLE public.answer_log (
-    id bigint NOT NULL,
-    question_id bigint NOT NULL,
-    user_answer text NOT NULL,
-    ai_feedback text NOT NULL,
-    score integer,
-    session_id bigint NOT NULL,
-    missing_keywords character varying(255),
-    matched_keywords character varying(255),
-    captured_image_path character varying(255),
-    duration integer,
-    created_at timestamp without time zone DEFAULT now() NOT NULL
+                                   id bigint NOT NULL,
+                                   question_id bigint NOT NULL,
+                                   user_answer text NOT NULL,
+                                   ai_feedback text NOT NULL,
+                                   score integer,
+                                   session_id bigint NOT NULL,
+                                   missing_keywords jsonb, -- character varying(255)에서 jsonb로 수정 완료
+                                   matched_keywords jsonb, -- character varying(255)에서 jsonb로 수정 완료
+                                   captured_image_path character varying(255),
+                                   duration integer,
+                                   created_at timestamp without time zone DEFAULT now() NOT NULL
 );
 
-ALTER TABLE public.answer_log OWNER TO postgres;
+ALTER TABLE public.answer_log OWNER TO interview_db_kmnb_user;
 
 CREATE SEQUENCE public.answer_log_id_seq
     AS bigint
@@ -239,21 +244,26 @@ CREATE SEQUENCE public.answer_log_id_seq
     NO MAXVALUE
     CACHE 1;
 
-ALTER SEQUENCE public.answer_log_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.answer_log_id_seq OWNER TO interview_db_kmnb_user;
 ALTER SEQUENCE public.answer_log_id_seq OWNED BY public.answer_log.id;
 
+--
+-- TOC entry 230 (class 1259 OID 16540)
+-- Name: review_state; Type: TABLE; Schema: public; Owner: interview_db_kmnb_user
+--
+
 CREATE TABLE public.review_state (
-    id bigint NOT NULL,
-    user_id bigint NOT NULL,
-    question_id bigint NOT NULL,
-    repetition_count integer NOT NULL,
-    easiness_factor double precision NOT NULL,
-    current_interval integer NOT NULL,
-    next_review_date date NOT NULL,
-    last_reviewed_at date NOT NULL
+                                     id bigint NOT NULL,
+                                     user_id bigint NOT NULL,
+                                     question_id bigint NOT NULL,
+                                     repetition_count integer NOT NULL,
+                                     easiness_factor double precision NOT NULL,
+                                     current_interval integer NOT NULL,
+                                     next_review_date date NOT NULL,
+                                     last_reviewed_at date NOT NULL
 );
 
-ALTER TABLE public.review_state OWNER TO postgres;
+ALTER TABLE public.review_state OWNER TO interview_db_kmnb_user;
 
 CREATE SEQUENCE public.review_state_id_seq
     AS bigint
@@ -263,16 +273,13 @@ CREATE SEQUENCE public.review_state_id_seq
     NO MAXVALUE
     CACHE 1;
 
-ALTER SEQUENCE public.review_state_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.review_state_id_seq OWNER TO interview_db_kmnb_user;
 ALTER SEQUENCE public.review_state_id_seq OWNED BY public.review_state.id;
-
-
-
 
 
 --
 -- TOC entry 4778 (class 2604 OID 16421)
--- Name: question_keywords id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: question_keywords id; Type: DEFAULT; Schema: public; Owner: interview_db_kmnb_user
 --
 
 ALTER TABLE ONLY public.question_keywords ALTER COLUMN id SET DEFAULT nextval('public.question_keywords_id_seq'::regclass);
@@ -280,7 +287,7 @@ ALTER TABLE ONLY public.question_keywords ALTER COLUMN id SET DEFAULT nextval('p
 
 --
 -- TOC entry 4776 (class 2604 OID 16403)
--- Name: questions id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: questions id; Type: DEFAULT; Schema: public; Owner: interview_db_kmnb_user
 --
 
 ALTER TABLE ONLY public.questions ALTER COLUMN id SET DEFAULT nextval('public.questions_id_seq'::regclass);
@@ -288,7 +295,7 @@ ALTER TABLE ONLY public.questions ALTER COLUMN id SET DEFAULT nextval('public.qu
 
 --
 -- TOC entry 4775 (class 2604 OID 16391)
--- Name: subjects id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: subjects id; Type: DEFAULT; Schema: public; Owner: interview_db_kmnb_user
 --
 
 ALTER TABLE ONLY public.subjects ALTER COLUMN id SET DEFAULT nextval('public.subjects_id_seq'::regclass);
@@ -296,7 +303,7 @@ ALTER TABLE ONLY public.subjects ALTER COLUMN id SET DEFAULT nextval('public.sub
 
 --
 -- TOC entry 4780 (class 2604 OID 16486)
--- Name: users id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: users id; Type: DEFAULT; Schema: public; Owner: interview_db_kmnb_user
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
@@ -304,7 +311,7 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 
 --
 -- TOC entry 4782 (class 2604 OID 16523)
--- Name: voice_learning_logs id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: interview_session id; Type: DEFAULT; Schema: public; Owner: interview_db_kmnb_user
 --
 
 ALTER TABLE ONLY public.interview_session ALTER COLUMN id SET DEFAULT nextval('public.interview_session_id_seq'::regclass);
@@ -317,7 +324,7 @@ ALTER TABLE ONLY public.review_state ALTER COLUMN id SET DEFAULT nextval('public
 --
 -- TOC entry 4954 (class 0 OID 16418)
 -- Dependencies: 224
--- Data for Name: question_keywords; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: question_keywords; Type: TABLE DATA; Schema: public; Owner: interview_db_kmnb_user
 --
 
 COPY public.question_keywords (id, question_id, keyword, weight) FROM stdin;
@@ -802,14 +809,14 @@ COPY public.question_keywords (id, question_id, keyword, weight) FROM stdin;
 --
 -- TOC entry 4952 (class 0 OID 16400)
 -- Dependencies: 222
--- Data for Name: questions; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: questions; Type: TABLE DATA; Schema: public; Owner: interview_db_kmnb_user
 --
 
 COPY public.questions (id, subject_id, title, ideal_answer, difficulty) FROM stdin;
 1	1	객체 지향 프로그래밍(OOP)의 4대 특징을 설명하세요.	추상화, 캡슐화, 상속, 다형성이 있습니다.	3
 2	1	SOLID 원칙에 대해 설명해주세요.	단일 책임, 개방-폐쇄, 리스코프 치환, 인터페이스 분리, 의존역전 원칙입니다.	3
 3	1	싱글톤 패턴(Singleton Pattern)의 개념과 주의점을 말해주세요.	인스턴스를 하나만 생성하는 패턴이며 멀티스레드 동시성 문제를 주의해야 합니다.	3
-4	1	팩토리 메서드 패턴과 추상 팩토리 패턴의 차이는 무엇인가요?	팩토리는 메서드 수준에서 객체를 생성하고, 추상 팩토리는 관련된 객체 군을 통째로 생성합니다.	3
+4	1	팩토리 메서드 패턴และ 추상 팩토리 패턴의 차이는 무엇인가요?	팩토리는 메서드 수준에서 객체를 생성하고, 추상 팩토리는 관련된 객체 군을 통째로 생성합니다.	3
 5	1	MVC 패턴의 각 컴포넌트 역할을 설명하세요.	데이터를 다루는 모델, 화면을 보여주는 뷰, 로직을 제어하는 컨트롤러로 나뉩니다.	3
 6	1	의존성 주입(DI)의 개념과 장점을 설명하세요.	외부에서 객체를 주입받아 결합도를 낮추고 테스트 용이성을 높이는 기법입니다.	3
 7	1	TDD(테스트 주도 개발)의 사이클에 대해 설명하세요.	실패하는 테스트를 먼저 작성하고, 이를 통과하는 코드를 짠 뒤 리팩토링합니다.	3
@@ -939,7 +946,7 @@ COPY public.questions (id, subject_id, title, ideal_answer, difficulty) FROM std
 134	4	HTTP와 HTTPS의 보안 매커니즘 차이를 설명하세요.	HTTPS는 443 포트를 쓰며 SSL/TLS 핸드셰이크를 통해 데이터를 암호화 전송합니다.	3
 135	4	DNS(Domain Name System)의 질의 프로세스를 설명하세요.	로컬 캐시 확인 후, 리커시브 서버가 루트 네임서버부터 계층적으로 찾아 IP를 반환합니다.	3
 136	4	쿠키와 세션의 보안적 관점 차이를 설명하세요.	쿠키는 변조 위험이 있는 로컬 브라우저에 저장되고, 세션은 안전하게 서버 메모리에 보관됩니다.	3
-137	4	CORS 정책이 발생하는 원인과 해결책을 말해주세요.	브라우저가 보안을 위해 교차 출처의 자원 요청을 차단하는 것으로, 서버 헤더 허용 설정이 필요합니다.	3
+137	4	CORS 정책이 발생하는 원인과 해결책을 말해주세요.	브라우저가 보안 위해 교차 출처의 자원 요청을 차단하는 것으로, 서버 헤더 허용 설정이 필요합니다.	3
 138	4	로드 밸런서(Load Balancer) 스케줄링 알고리즘 종류를 설명하세요.	라운드 로빈, 최소 연결 방식(Least Connection), 해시 방식 등이 있습니다.	3
 139	4	웹소켓(WebSocket) 프로토콜의 장점을 설명하세요.	HTTP와 달리 한 번 연결되면 양방향으로 데이터를 헤더 오버헤드 없이 실시간 스트리밍할 수 있습니다.	3
 140	4	DDoS(분산 서비스 거부 공격)의 개념을 설명하세요.	수많은 좀비 PC 네트워크를 이용해 타겟 서버에 과도한 트래픽을 발생시켜 마비시키는 공격입니다.	3
@@ -972,7 +979,7 @@ COPY public.questions (id, subject_id, title, ideal_answer, difficulty) FROM std
 --
 -- TOC entry 4950 (class 0 OID 16388)
 -- Dependencies: 220
--- Data for Name: subjects; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: subjects; Type: TABLE DATA; Schema: public; Owner: interview_db_kmnb_user
 --
 
 COPY public.subjects (id, name) FROM stdin;
@@ -986,7 +993,7 @@ COPY public.subjects (id, name) FROM stdin;
 --
 -- TOC entry 4956 (class 0 OID 16483)
 -- Dependencies: 226
--- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: interview_db_kmnb_user
 --
 
 COPY public.users (id, username, password_hash, name, created_at) FROM stdin;
@@ -995,24 +1002,24 @@ COPY public.users (id, username, password_hash, name, created_at) FROM stdin;
 
 
 --
--- Data for Name: interview_session; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: interview_session; Type: TABLE DATA; Schema: public; Owner: interview_db_kmnb_user
 --
 
 INSERT INTO public.interview_session (id, session_id, user_id, subject, avg_score, overall_feedback, avg_duration, status, created_at) VALUES
 (1, 'sample-session-uuid-1', 1, '소프트웨어 설계/개발', 96, '핵심 제약 조건인 무상태성과 일관된 인터페이스를 정확히 짚었습니다.', 30, 'COMPLETED', '2026-05-17 16:07:51.979105');
 
 --
--- Data for Name: answer_log; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: answer_log; Type: TABLE DATA; Schema: public; Owner: interview_db_kmnb_user
 --
 
 INSERT INTO public.answer_log (id, question_id, user_answer, ai_feedback, score, session_id, missing_keywords, matched_keywords, captured_image_path, duration, created_at) VALUES
-(1, 20, 'REST 아키텍처는 무상태성이 중요하고 일관된 인터페이스를 가집니다.', '핵심 제약 조건인 무상태성과 일관된 인터페이스를 정확히 짚었습니다.', 96, 1, NULL, '무상태성, 일관된 인터페이스', '/uploads/test_user1.png', 30, '2026-05-17 16:07:51.979105');
+    (1, 20, 'REST 아키텍처는 무상태성이 중요하고 일관된 인터페이스를 가집니다.', '핵심 제약 조건인 무상태성과 일관된 인터페이스를 정확히 짚었습니다.', 96, 1, NULL, '["무상태성", "일관된 인터페이스"]', '/uploads/test_user1.png', 30, '2026-05-17 16:07:51.979105');
 
 
 --
 -- TOC entry 4969 (class 0 OID 0)
 -- Dependencies: 223
--- Name: question_keywords_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: question_keywords_id_seq; Type: SEQUENCE SET; Schema: public; Owner: interview_db_kmnb_user
 --
 
 SELECT pg_catalog.setval('public.question_keywords_id_seq', 475, true);
@@ -1021,7 +1028,7 @@ SELECT pg_catalog.setval('public.question_keywords_id_seq', 475, true);
 --
 -- TOC entry 4970 (class 0 OID 0)
 -- Dependencies: 221
--- Name: questions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: questions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: interview_db_kmnb_user
 --
 
 SELECT pg_catalog.setval('public.questions_id_seq', 160, true);
@@ -1030,7 +1037,7 @@ SELECT pg_catalog.setval('public.questions_id_seq', 160, true);
 --
 -- TOC entry 4971 (class 0 OID 0)
 -- Dependencies: 219
--- Name: subjects_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: subjects_id_seq; Type: SEQUENCE SET; Schema: public; Owner: interview_db_kmnb_user
 --
 
 SELECT pg_catalog.setval('public.subjects_id_seq', 4, true);
@@ -1039,7 +1046,7 @@ SELECT pg_catalog.setval('public.subjects_id_seq', 4, true);
 --
 -- TOC entry 4972 (class 0 OID 0)
 -- Dependencies: 225
--- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: interview_db_kmnb_user
 --
 
 SELECT pg_catalog.setval('public.users_id_seq', 1, true);
@@ -1048,7 +1055,7 @@ SELECT pg_catalog.setval('public.users_id_seq', 1, true);
 --
 -- TOC entry 4973 (class 0 OID 0)
 -- Dependencies: 227
--- Name: voice_learning_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: voice_learning_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: interview_db_kmnb_user
 --
 
 SELECT pg_catalog.setval('public.interview_session_id_seq', 1, true);
@@ -1058,7 +1065,7 @@ SELECT pg_catalog.setval('public.review_state_id_seq', 1, false);
 
 --
 -- TOC entry 4791 (class 2606 OID 16426)
--- Name: question_keywords question_keywords_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: question_keywords question_keywords_pkey; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
 --
 
 ALTER TABLE ONLY public.question_keywords
@@ -1067,7 +1074,7 @@ ALTER TABLE ONLY public.question_keywords
 
 --
 -- TOC entry 4789 (class 2606 OID 16411)
--- Name: questions questions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: questions questions_pkey; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
 --
 
 ALTER TABLE ONLY public.questions
@@ -1076,7 +1083,7 @@ ALTER TABLE ONLY public.questions
 
 --
 -- TOC entry 4785 (class 2606 OID 16543)
--- Name: subjects subjects_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: subjects subjects_name_key; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
 --
 
 ALTER TABLE ONLY public.subjects
@@ -1085,7 +1092,7 @@ ALTER TABLE ONLY public.subjects
 
 --
 -- TOC entry 4787 (class 2606 OID 16396)
--- Name: subjects subjects_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: subjects subjects_pkey; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
 --
 
 ALTER TABLE ONLY public.subjects
@@ -1094,7 +1101,7 @@ ALTER TABLE ONLY public.subjects
 
 --
 -- TOC entry 4793 (class 2606 OID 16493)
--- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
 --
 
 ALTER TABLE ONLY public.users
@@ -1103,7 +1110,7 @@ ALTER TABLE ONLY public.users
 
 --
 -- TOC entry 4795 (class 2606 OID 16495)
--- Name: users users_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: users users_username_key; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
 --
 
 ALTER TABLE ONLY public.users
@@ -1111,61 +1118,61 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: interview_session interview_session_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: interview_session interview_session_pkey; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
 --
 ALTER TABLE ONLY public.interview_session
     ADD CONSTRAINT interview_session_pkey PRIMARY KEY (id);
 
 --
--- Name: interview_session interview_session_session_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: interview_session interview_session_session_id_key; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
 --
 ALTER TABLE ONLY public.interview_session
     ADD CONSTRAINT interview_session_session_id_key UNIQUE (session_id);
 
 --
--- Name: answer_log answer_log_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: answer_log answer_log_pkey; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
 --
 ALTER TABLE ONLY public.answer_log
     ADD CONSTRAINT answer_log_pkey PRIMARY KEY (id);
 
 --
--- Name: review_state review_state_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: review_state review_state_pkey; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
 --
 ALTER TABLE ONLY public.review_state
     ADD CONSTRAINT review_state_pkey PRIMARY KEY (id);
 
 --
--- Name: review_state uk_review_state_user_question; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: review_state uk_review_state_user_question; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
 --
 ALTER TABLE ONLY public.review_state
     ADD CONSTRAINT uk_review_state_user_question UNIQUE (user_id, question_id);
 
 --
--- Name: interview_session fk_session_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: interview_session fk_session_user; Type: FK CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
 --
 ALTER TABLE ONLY public.interview_session
     ADD CONSTRAINT fk_session_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 --
--- Name: answer_log fk_log_question; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: answer_log fk_log_question; Type: FK CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
 --
 ALTER TABLE ONLY public.answer_log
     ADD CONSTRAINT fk_log_question FOREIGN KEY (question_id) REFERENCES public.questions(id) ON DELETE CASCADE;
 
 --
--- Name: answer_log fk_log_session; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: answer_log fk_log_session; Type: FK CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
 --
 ALTER TABLE ONLY public.answer_log
     ADD CONSTRAINT fk_log_session FOREIGN KEY (session_id) REFERENCES public.interview_session(id) ON DELETE CASCADE;
 
 --
--- Name: review_state fk_review_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: review_state fk_review_user; Type: FK CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
 --
 ALTER TABLE ONLY public.review_state
     ADD CONSTRAINT fk_review_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 --
--- Name: review_state fk_review_question; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: review_state fk_review_question; Type: FK CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
 --
 ALTER TABLE ONLY public.review_state
     ADD CONSTRAINT fk_review_question FOREIGN KEY (question_id) REFERENCES public.questions(id) ON DELETE CASCADE;
@@ -1173,7 +1180,7 @@ ALTER TABLE ONLY public.review_state
 
 --
 -- TOC entry 4799 (class 2606 OID 16427)
--- Name: question_keywords question_keywords_question_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: question_keywords question_keywords_question_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
 --
 
 ALTER TABLE ONLY public.question_keywords
@@ -1182,7 +1189,7 @@ ALTER TABLE ONLY public.question_keywords
 
 --
 -- TOC entry 4798 (class 2606 OID 16412)
--- Name: questions questions_subject_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: questions questions_subject_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
 --
 
 ALTER TABLE ONLY public.questions
@@ -1196,4 +1203,3 @@ ALTER TABLE ONLY public.questions
 --
 
 \unrestrict Eznf0CTH93Uei6ldvHHwp91AwB7fwg8Ua7QT5phuEdC5bXMJPn7js6zqQwkSKpD
-

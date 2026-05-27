@@ -5,8 +5,10 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "answer_log")
@@ -35,11 +37,13 @@ public class AnswerLog {
     @JoinColumn(name = "session_id", nullable = false)
     private InterviewSession interviewSession;
     
-    @Column(name = "missing_keywords", length = 255)
-    private String missingKeywords;
-
-    @Column(name = "matched_keywords", length = 255)
-    private String matchedKeywords;
+    @JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(name = "missing_keywords", columnDefinition = "jsonb")
+    private List<String> missingKeywords;
+    
+    @JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(name = "matched_keywords", columnDefinition = "jsonb")
+    private List<String> matchedKeywords;
 
     @Column(name = "captured_image_path", length = 255)
     private String capturedImagePath;
@@ -53,7 +57,7 @@ public class AnswerLog {
     @Builder
     private AnswerLog(Question question, String userAnswer, String aiFeedback,
                       Integer score, InterviewSession interviewSession,
-                      String missingKeywords, String matchedKeywords,
+                      List<String> missingKeywords, List<String> matchedKeywords, // String -> List<String>으로 변경
                       String capturedImagePath, Integer duration) {
         this.question = question;
         this.userAnswer = userAnswer;
