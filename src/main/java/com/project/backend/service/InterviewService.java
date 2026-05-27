@@ -207,6 +207,40 @@ public class InterviewService {
                 avgDuration / 60, feedbackList, results);
     }
     
+    // 복습 시 학습 이력에서 똑같은 문제로 세션 생성
+    @Transactional
+    public InterviewStartResponse retryInterview(Long userId, String pastSessionId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        
+        List<AnswerLog> pastLogs = answerLogRepository
+                .findByInterviewSession_SessionIdOrderByCreatedAtAsc(pastSessionId);
+        
+        if (pastLogs.isEmpty()) {
+            throw new IllegalArgumentException("과거 면접 이력을 찾을 수 없습니다.");
+        }
+        
+        // 면접 세션 새로 생성
+        String newSessionId = UUID.randomUUID().toString();
+        InterviewSession newSession = InterviewSession.builder()
+                .sessionId(newSessionId)
+                .user(user)
+                .subject(pastLogs.get(0).getQuestion().getSubjectName()) // 기존 과목명 추출
+                .build();
+        sessionRepository.save(newSession);
+        
+        // 과거 문제들로 문제 출제 dto 생성
+        List<QuestionResponse> questions = pastLogs.stream()
+                .map(log -> new QuestionResponse(
+                        log.getQuestion().getId(),
+                        log.getQuestion().getSubjectName(),
+                        log.getQuestion().getTitle()
+                ))
+                .toList();
+        
+        return new InterviewStartResponse(newSessionId, newSession.getSubject(), questions);
+    }
+    
     // 복습 화면과 세부 결과창에 쓸 데이터 처리
     @Transactional(readOnly = true)
     public InterviewDetailResponse getInterviewResult(String interviewId) {

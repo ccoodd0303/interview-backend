@@ -105,4 +105,13 @@ public class InterviewController {
             @PathVariable String interviewId) {
         return ResponseEntity.ok(interviewService.getInterviewResult(interviewId));
     }
+    
+    // 복습하기
+    @PostMapping("/{interviewId}/retry")
+    public ResponseEntity<InterviewStartResponse> retryInterview(
+            @PathVariable String interviewId,
+            @RequestParam("userId") Long userId) {
+        
+        return ResponseEntity.ok(interviewService.retryInterview(userId, interviewId));
+    }
 }
