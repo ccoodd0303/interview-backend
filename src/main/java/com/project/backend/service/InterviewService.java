@@ -213,6 +213,8 @@ public class InterviewService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         
+        sessionRepository.deleteByUserIdAndStatus(userId, SessionStatus.IN_PROGRESS);
+        
         List<AnswerLog> pastLogs = answerLogRepository
                 .findByInterviewSession_SessionIdOrderByCreatedAtAsc(pastSessionId);
         
