@@ -46,10 +46,7 @@ public class InterviewService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         
-        List<InterviewSession> inProgressSessions = sessionRepository
-                .findByUserIdAndStatusOrderByCreatedAtDesc(userId, SessionStatus.IN_PROGRESS);
-        
-        sessionRepository.deleteAll(inProgressSessions);
+        sessionRepository.deleteByUserIdAndStatus(userId, SessionStatus.IN_PROGRESS);
         
         String sessionId = UUID.randomUUID().toString();
         InterviewSession session = InterviewSession.builder()
