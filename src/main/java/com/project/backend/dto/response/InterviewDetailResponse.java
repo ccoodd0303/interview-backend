@@ -11,6 +11,6 @@ public record InterviewDetailResponse(
         Integer totalQuestions,
         Integer excellentCount,
         Integer avgTimeMin,
-        String feedback, // 👈 List<String>에서 String으로 변경
+        String feedback,
         List<QuestionDetailResponse> results
 ) {}

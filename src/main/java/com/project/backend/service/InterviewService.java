@@ -45,7 +45,10 @@ public class InterviewService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         
-        sessionRepository.deleteByUserIdAndStatus(userId, SessionStatus.IN_PROGRESS);
+        List<InterviewSession> activeSessions = sessionRepository.findByUserIdAndStatusOrderByCreatedAtDesc(userId, SessionStatus.IN_PROGRESS);
+        if (!activeSessions.isEmpty()) {
+            sessionRepository.deleteAll(activeSessions);
+        }
         
         String sessionId = UUID.randomUUID().toString();
         InterviewSession session = InterviewSession.builder()
@@ -214,7 +217,10 @@ public class InterviewService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         
-        sessionRepository.deleteByUserIdAndStatus(userId, SessionStatus.IN_PROGRESS);
+        List<InterviewSession> activeSessions = sessionRepository.findByUserIdAndStatusOrderByCreatedAtDesc(userId, SessionStatus.IN_PROGRESS);
+        if (!activeSessions.isEmpty()) {
+            sessionRepository.deleteAll(activeSessions);
+        }
         
         List<AnswerLog> pastLogs = answerLogRepository
                 .findByInterviewSession_SessionIdOrderByCreatedAtAsc(pastSessionId);
