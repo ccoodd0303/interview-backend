@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface QuestionRepository extends JpaRepository<Question, Long> {
     
@@ -14,4 +15,11 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     
     @Query("SELECT DISTINCT q.subject.name FROM Question q")
     List<String> findDistinctSubjects();
+    
+    // 비동기 환경에서 db 연결 종료되어 접근 못 하는 문제 방지
+    @Query("SELECT q FROM Question q " +
+            "JOIN FETCH q.subject " +
+            "LEFT JOIN FETCH q.keywords " +
+            "WHERE q.id = :id")
+    Optional<Question> findWithSubjectAndKeywordsById(@Param("id") Long id);
 }

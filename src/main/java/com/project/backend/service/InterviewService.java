@@ -73,7 +73,7 @@ public class InterviewService {
             Path tempPath) {
         
         try {
-            Question question = questionRepository.findById(questionId)
+            Question question = questionRepository.findWithSubjectAndKeywordsById(questionId)
                     .orElseThrow(() -> new IllegalArgumentException("질문을 찾을 수 없습니다."));
             
             InterviewSession session = sessionRepository.findBySessionId(interviewId)
