@@ -10,5 +10,5 @@ public record QuestionDetailResponse(
         Integer score,
         Integer duration,
         String feedback,
-        List<String> keywords
+        List<String> missingKeywords
 ) {}
