@@ -38,6 +38,7 @@ public class InterviewService {
     private final ReviewStateRepository reviewStateRepository;
     private final QuestionService questionService;
     private final TransactionTemplate transactionTemplate;
+    private final AudioDurationUtil audioDurationUtil;
     
     // 새로운 면접 세션을 생성하고 지정된 과목의 문제를 출제
     @Transactional
@@ -83,7 +84,7 @@ public class InterviewService {
             }
             
             // 오디오 파일 길이 측정
-            int duration = AudioDurationUtil.extractDuration(tempPath);
+            int duration = audioDurationUtil.extractDuration(tempPath);
             
             // AI 서버로 파일 전송
             Resource audioResource = new FileSystemResource(tempPath.toFile());
@@ -92,6 +93,7 @@ public class InterviewService {
                     audioResource, question.getSubjectName(),
                     question.getTitle(), question.getTargetKeywords());
             
+            // 받은 데이터 처리
             String transcribed = aiResponse.transcribedAnswer();
             Integer score = aiResponse.score();
             
