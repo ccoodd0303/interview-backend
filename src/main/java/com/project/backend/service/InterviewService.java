@@ -91,7 +91,7 @@ public class InterviewService {
             
             AiServerResponse aiResponse = aiEvaluationService.evaluateAudio(
                     audioResource, question.getSubjectName(),
-                    question.getTitle(), question.getTargetKeywords());
+                    question.getTitle(), question.getIdealAnswer(), question.getTargetKeywords());
             
             // 받은 데이터 처리
             String transcribed = aiResponse.transcribedAnswer();
