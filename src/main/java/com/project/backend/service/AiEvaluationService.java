@@ -76,12 +76,14 @@ public class AiEvaluationService {
             
             String body = objectMapper.writeValueAsString(Map.of("answers", answers));
             
-            return restClient.post()
+            String rawResponse = restClient.post()
                     .uri("/summary")
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(body)
                     .retrieve()
                     .body(String.class);
+            
+            return objectMapper.readValue(rawResponse, String.class);
             
         } catch (Exception e) {
             log.error("AI 서버 총평 요청 중 오류 발생: {}", e.getMessage());
