@@ -1,13 +1,4 @@
---
--- PostgreSQL database dump
---
 
-\restrict Eznf0CTH93Uei6ldvHHwp91AwB7fwg8Ua7QT5phuEdC5bXMJPn7js6zqQwkSKpD
-
--- Dumped from database version 18.4
--- Dumped by pg_dump version 18.4
-
--- Started on 2026-05-17 16:09:58
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -25,10 +16,7 @@ SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
---
--- TOC entry 224 (class 1259 OID 16418)
--- Name: question_keywords; Type: TABLE; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 CREATE TABLE public.question_keywords (
                                           id bigint NOT NULL,
@@ -39,10 +27,7 @@ CREATE TABLE public.question_keywords (
 
 ALTER TABLE public.question_keywords OWNER TO interview_db_kmnb_user;
 
---
--- TOC entry 223 (class 1259 OID 16417)
--- Name: question_keywords_id_seq; Type: SEQUENCE; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 CREATE SEQUENCE public.question_keywords_id_seq
     AS bigint
@@ -55,19 +40,12 @@ CREATE SEQUENCE public.question_keywords_id_seq
 
 ALTER SEQUENCE public.question_keywords_id_seq OWNER TO interview_db_kmnb_user;
 
---
--- TOC entry 4964 (class 0 OID 0)
--- Dependencies: 223
--- Name: question_keywords_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 ALTER SEQUENCE public.question_keywords_id_seq OWNED BY public.question_keywords.id;
 
 
---
--- TOC entry 222 (class 1259 OID 16400)
--- Name: questions; Type: TABLE; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 CREATE TABLE public.questions (
                                   id bigint NOT NULL,
@@ -80,10 +58,7 @@ CREATE TABLE public.questions (
 
 ALTER TABLE public.questions OWNER TO interview_db_kmnb_user;
 
---
--- TOC entry 221 (class 1259 OID 16399)
--- Name: questions_id_seq; Type: SEQUENCE; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 CREATE SEQUENCE public.questions_id_seq
     AS bigint
@@ -96,19 +71,12 @@ CREATE SEQUENCE public.questions_id_seq
 
 ALTER SEQUENCE public.questions_id_seq OWNER TO interview_db_kmnb_user;
 
---
--- TOC entry 4965 (class 0 OID 0)
--- Dependencies: 221
--- Name: questions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 ALTER SEQUENCE public.questions_id_seq OWNED BY public.questions.id;
 
 
---
--- TOC entry 220 (class 1259 OID 16388)
--- Name: subjects; Type: TABLE; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 CREATE TABLE public.subjects (
                                  id bigint NOT NULL,
@@ -119,10 +87,7 @@ CREATE TABLE public.subjects (
 
 ALTER TABLE public.subjects OWNER TO interview_db_kmnb_user;
 
---
--- TOC entry 219 (class 1259 OID 16387)
--- Name: subjects_id_seq; Type: SEQUENCE; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 CREATE SEQUENCE public.subjects_id_seq
     AS bigint
@@ -135,19 +100,12 @@ CREATE SEQUENCE public.subjects_id_seq
 
 ALTER SEQUENCE public.subjects_id_seq OWNER TO interview_db_kmnb_user;
 
---
--- TOC entry 4966 (class 0 OID 0)
--- Dependencies: 219
--- Name: subjects_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 ALTER SEQUENCE public.subjects_id_seq OWNED BY public.subjects.id;
 
 
---
--- TOC entry 226 (class 1259 OID 16483)
--- Name: users; Type: TABLE; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 CREATE TABLE public.users (
                               id bigint NOT NULL,
@@ -160,10 +118,7 @@ CREATE TABLE public.users (
 
 ALTER TABLE public.users OWNER TO interview_db_kmnb_user;
 
---
--- TOC entry 225 (class 1259 OID 16482)
--- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 CREATE SEQUENCE public.users_id_seq
     AS bigint
@@ -176,19 +131,12 @@ CREATE SEQUENCE public.users_id_seq
 
 ALTER SEQUENCE public.users_id_seq OWNER TO interview_db_kmnb_user;
 
---
--- TOC entry 4967 (class 0 OID 0)
--- Dependencies: 225
--- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
---
--- TOC entry 228 (class 1259 OID 16520)
--- Name: interview_session; Type: TABLE; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 CREATE TABLE public.interview_session (
                                           id bigint NOT NULL,
@@ -215,10 +163,7 @@ CREATE SEQUENCE public.interview_session_id_seq
 ALTER SEQUENCE public.interview_session_id_seq OWNER TO interview_db_kmnb_user;
 ALTER SEQUENCE public.interview_session_id_seq OWNED BY public.interview_session.id;
 
---
--- TOC entry 229 (class 1259 OID 16530)
--- Name: answer_log; Type: TABLE; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 CREATE TABLE public.answer_log (
                                    id bigint NOT NULL,
@@ -227,8 +172,8 @@ CREATE TABLE public.answer_log (
                                    ai_feedback text NOT NULL,
                                    score integer,
                                    session_id bigint NOT NULL,
-                                   missing_keywords jsonb, -- character varying(255)에서 jsonb로 수정 완료
-                                   matched_keywords jsonb, -- character varying(255)에서 jsonb로 수정 완료
+                                   missing_keywords jsonb,
+                                   matched_keywords jsonb,
                                    captured_image_path character varying(255),
                                    duration integer,
                                    created_at timestamp without time zone DEFAULT now() NOT NULL
@@ -247,10 +192,7 @@ CREATE SEQUENCE public.answer_log_id_seq
 ALTER SEQUENCE public.answer_log_id_seq OWNER TO interview_db_kmnb_user;
 ALTER SEQUENCE public.answer_log_id_seq OWNED BY public.answer_log.id;
 
---
--- TOC entry 230 (class 1259 OID 16540)
--- Name: review_state; Type: TABLE; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 CREATE TABLE public.review_state (
                                      id bigint NOT NULL,
@@ -277,42 +219,15 @@ ALTER SEQUENCE public.review_state_id_seq OWNER TO interview_db_kmnb_user;
 ALTER SEQUENCE public.review_state_id_seq OWNED BY public.review_state.id;
 
 
---
--- TOC entry 4778 (class 2604 OID 16421)
--- Name: question_keywords id; Type: DEFAULT; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 ALTER TABLE ONLY public.question_keywords ALTER COLUMN id SET DEFAULT nextval('public.question_keywords_id_seq'::regclass);
 
-
---
--- TOC entry 4776 (class 2604 OID 16403)
--- Name: questions id; Type: DEFAULT; Schema: public; Owner: interview_db_kmnb_user
---
-
 ALTER TABLE ONLY public.questions ALTER COLUMN id SET DEFAULT nextval('public.questions_id_seq'::regclass);
-
-
---
--- TOC entry 4775 (class 2604 OID 16391)
--- Name: subjects id; Type: DEFAULT; Schema: public; Owner: interview_db_kmnb_user
---
 
 ALTER TABLE ONLY public.subjects ALTER COLUMN id SET DEFAULT nextval('public.subjects_id_seq'::regclass);
 
-
---
--- TOC entry 4780 (class 2604 OID 16486)
--- Name: users id; Type: DEFAULT; Schema: public; Owner: interview_db_kmnb_user
---
-
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
-
-
---
--- TOC entry 4782 (class 2604 OID 16523)
--- Name: interview_session id; Type: DEFAULT; Schema: public; Owner: interview_db_kmnb_user
---
 
 ALTER TABLE ONLY public.interview_session ALTER COLUMN id SET DEFAULT nextval('public.interview_session_id_seq'::regclass);
 
@@ -321,11 +236,6 @@ ALTER TABLE ONLY public.answer_log ALTER COLUMN id SET DEFAULT nextval('public.a
 ALTER TABLE ONLY public.review_state ALTER COLUMN id SET DEFAULT nextval('public.review_state_id_seq'::regclass);
 
 
---
--- TOC entry 4954 (class 0 OID 16418)
--- Dependencies: 224
--- Data for Name: question_keywords; Type: TABLE DATA; Schema: public; Owner: interview_db_kmnb_user
---
 
 COPY public.question_keywords (id, question_id, keyword, weight) FROM stdin;
 1	1	추상화	1
@@ -806,11 +716,7 @@ COPY public.question_keywords (id, question_id, keyword, weight) FROM stdin;
 \.
 
 
---
--- TOC entry 4952 (class 0 OID 16400)
--- Dependencies: 222
--- Data for Name: questions; Type: TABLE DATA; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 COPY public.questions (id, subject_id, title, ideal_answer, difficulty) FROM stdin;
 1	1	객체 지향 프로그래밍(OOP)의 4대 특징을 설명하세요.	추상화, 캡슐화, 상속, 다형성이 있습니다.	3
@@ -832,6 +738,7 @@ COPY public.questions (id, subject_id, title, ideal_answer, difficulty) FROM std
 17	1	프록시 패턴(Proxy Pattern)의 장점을 설명하세요.	실제 객체에 접근하기 전 제어 흐름을 가로채어 권한 검사나 캐싱을 수행합니다.	3
 18	1	요구사항 명세서(SRS) 작성이 중요한 이유를 설명하세요.	개발자와 고객 간의 의사소통 기준이 되며 프로젝트의 범위를 확정 짓기 때문입니다.	3
 19	1	소프트웨어 아키텍처 패턴 중 레이어드 아키텍처를 설명하세요.	관심사 분리를 위해 시스템을 수직적인 계층(프레젠테이션, 비즈니스, 데이터)으로 나눕니다.	3
+20	1	REST 아키텍처 스타일의 주요 제약 조건을 말해주세요.	무상태성, 클라이언트-서버 구조, 캐시 가능성, 일관된 인터페이스 등이 있습니다.	3
 21	1	결합도(Coupling)와 응집도(Cohesion)의 이상적인 관계는 무엇인가요?	낮은 결합도와 높은 응집도를 유지하는 것이 가장 이상적입니다.	3
 22	1	모듈화(Modularity)의 개념과 효과를 설명하세요.	소프트웨어를 독립적인 기능을 가진 단위로 나누어 복잡도를 낮추고 재사용성을 높이는 것입니다.	3
 23	1	코드 리뷰(Code Review)의 주된 목적을 설명하세요.	버그를 조기 발견하고 지식을 공유하며 전체적인 코드 품질과 표준을 유지하기 위함입니다.	3
@@ -852,7 +759,7 @@ COPY public.questions (id, subject_id, title, ideal_answer, difficulty) FROM std
 38	1	화이트박스 테스트와 블랙박스 테스트의 차이를 설명하세요.	화이트박스는 내부 코드 구조를 보며 테스트하고, 블랙박스는 구조를 모른 채 기능 위주로 테스트합니다.	3
 39	1	소프트웨어 위기(Software Crisis)의 주된 요인을 설명하세요.	하드웨어 발전에 비해 소프트웨어의 규모와 복잡도가 폭발하여 일정 지연 및 품질 저하가 발생한 현상입니다.	3
 40	1	도메인 모델(Domain Model)을 설계하는 목적을 설명하세요.	비즈니스 핵심 규칙과 개념적 구조를 단순화하여 개발자와 도메인 전문가 간의 격차를 해소하기 위함입니다.	3
-41	2	데이터베이스 인덱스(Index)의 개념과 장단점을 설명해주세요.	검색 속도 향상을 위해 구조를 사용하지만 삽입, 수정, 삭제 작업 시 성능이 저하될 수 있습니다.	3
+41	2	데이터베이스 인덱스(Index)의 개념과 장단점을 설명해주세요.	검색 속도 향상을 위해 별도의 인덱스 구조를 사용하지만 삽입, 수정, 삭제 작업 시 성능이 저하될 수 있습니다.	3
 42	2	트랜잭션(Transaction)의 ACID 특성을 설명해주세요.	원자성, 일관성, 고립성, 지속성을 통해 안전성을 보장합니다.	3
 43	2	SQL에서 JOIN의 종류와 차이점을 설명해주세요.	INNER JOIN, LEFT/RIGHT OUTER JOIN 등이 있습니다.	3
 44	2	정규화(Normalization)의 목적과 단계를 설명해주세요.	데이터 중복을 제거하고 이상 현상을 방지하기 위해 테이블을 단계별로 분해하는 과정입니다.	3
@@ -887,6 +794,7 @@ COPY public.questions (id, subject_id, title, ideal_answer, difficulty) FROM std
 73	2	데이터베이스 스키마(Schema)의 3단계 구조를 설명하세요.	외부 스키마, 개념 스키마, 내부 스키마로 구성됩니다.	3
 74	2	관계 대수와 관계 해석의 차이는 무엇인가요?	관계 대수는 절차적 언어이고, 관계 해석은 비절차적 언어입니다.	3
 75	2	데이터 사전(Data Dictionary)이란 무엇인가요?	데이터베이스 자체의 메타데이터(테이블 정보, 권한 등)를 담고 있는 시스템 테이블입니다.	3
+76	2	낙관적 락(Optimistic Lock)과 비관적 락(Pessimistic Lock)의 차이를 설명하세요.	비관적 락은 실제 데이터에 락을 걸고, 낙관적 락은 버전 체크를 통해 충돌을 방지합니다.	3
 77	2	Connection Pool을 사용하는 이유를 설명하세요.	미리 커넥션을 생성해 두고 재사용함으로써 DB 연결 생성 오버헤드를 줄이기 위함입니다.	3
 78	2	UPSERT 연산이란 무엇인가요?	데이터가 있으면 Update를 수행하고, 없으면 Insert를 수행하는 연산입니다.	3
 79	2	Elasticsearch와 같은 검색 엔진을 DB와 함께 쓰는 이유를 설명하세요.	RDBMS가 취약한 대량 텍스트의 형태소 분석 및 역색인 기반 고속 검색을 지원하기 위함입니다.	3
@@ -930,6 +838,7 @@ COPY public.questions (id, subject_id, title, ideal_answer, difficulty) FROM std
 117	3	최단 경로를 구하는 다익스트라(Dijkstra) 알고리즘의 원리를 설명하세요.	시작 노드에서 다른 노드까지의 최단 거리를 무한대로 두고, 인접한 노드 중 가장 가까운 곳을 방문하며 최단 거리를 갱신합니다.	3
 118	3	자바의 직렬화(Serialization)와 역직렬화의 개념을 설명하세요.	자바 객체를 메모리/네트워크 전송 가능한 바이너리 형태로 변환하는 것을 직렬화, 이를 다시 객체로 조립하는 것을 역직렬화라 합니다.	3
 119	3	동기(Synchronous)와 비동기(Asynchronous) 호출의 차이를 설명하세요.	동기는 호출한 함수의 작업이 끝날 때까지 기다렸다가 진행하고, 비동기는 작업을 맡긴 채 즉시 다음 코드를 실행합니다.	3
+120	3	자바의 스레드 스케줄링 방식을 설명하세요.	자바 어플리케이션 내부에서 돌아가는 멀티스레드들은 하드웨어 CPU 자원을 선점하기 위해 JVM 스케줄러의 통제 규칙에 따라 춤을 춥니다. 자바는 스레드 코드 단에서 부여한 숫자가 높을수록 CPU 영접 기회를 더 자주 배정해주는 우선순위(Priority) 방식 스케줄링과, 동일 선상에 놓인 스레드들에게 정해진 타임 슬라이스 시간 조각만큼 공평하게 CPU 자원을 쪼개어 번갈아 할당 제어하는 순환 할당(Round-Robin, 라운드 로빈) 방식을 결합 및 혼용한 아키텍처에 따라 전체 실행 흐름이 정밀하게 조율됩니다.	3
 121	4	프로세스와 스레드의 차이를 설명해주세요.	독립된 메모리 영역을 가진 프로세스와 자원을 공유하는 스레드의 차이입니다.	3
 122	4	교착상태(Deadlock)의 발생 조건 4가지를 설명해주세요.	상호 배제, 점유 대기, 비선점, 순환 대기 조건을 갖추어야 합니다.	3
 123	4	페이징(Paging)과 세그멘테이션(Segmentation)의 차이는 무엇인가요?	고정 크기 분할인 페이징과 가변 논리 단위 분할인 세그멘테이션의 차이입니다.	3
@@ -970,17 +879,7 @@ COPY public.questions (id, subject_id, title, ideal_answer, difficulty) FROM std
 158	4	서버 모니터링에서 CPU 사용량 중 어떤 지표가 중요하나요?	전체 CPU 사용량 외에도 I/O Wait(디스크 대기 시간) 비율을 확인하여 병목 현상 원인을 분석해야 합니다.	3
 159	4	프로젝트 관리에서 일정 지연을 막기 위한 주공정법(CPM)의 개념을 설명하세요.	전체 프로젝트 기간을 결정하는 가장 긴 작업 경로인 임계 경로(Critical Path)를 찾아 집중 관리하는 기법입니다.	3
 160	4	세션 기반 인증과 JWT(JSON Web Token) 토큰 인증의 큰 차이를 설명하세요.	세션은 서버 메모리에 상태를 저장하지만, JWT는 토큰 자체에 정보를 담아 클라이언트가 들고 다니므로 무상태 서버 확장에 유리합니다.	3
-20	1	REST 아키텍처 스타일의 주요 제약 조건을 말해주세요.	무상태성, 클라이언트-서버 구조, 캐시 가능성, 일관된 인터페이스 등이 있습니다.	3
-76	2	낙관적 락(Optimistic Lock)과 비관적 락(Pessimistic Lock)의 차이를 설명하세요.	비관적 락은 실제 데이터에 락을 걸고, 낙관적 락은 버전 체크를 통해 충돌을 방지합니다.	3
-120	3	자바의 싱글프레임워크 스레드와 멀티스레드의 실행 스케줄링 방식을 설명하세요.	자바 스레드는 JVM 스케줄러에 의해 우선순위(Priority) 방식과 라운드 로빈(Round-Robin) 방식이 결합된 스레드 스케줄링에 따라 시분할 제어됩니다.	3
 \.
-
-
---
--- TOC entry 4950 (class 0 OID 16388)
--- Dependencies: 220
--- Data for Name: subjects; Type: TABLE DATA; Schema: public; Owner: interview_db_kmnb_user
---
 
 COPY public.subjects (id, name) FROM stdin;
 1	소프트웨어 설계/개발
@@ -989,217 +888,101 @@ COPY public.subjects (id, name) FROM stdin;
 4	정보시스템 구축 관리
 \.
 
-
---
--- TOC entry 4956 (class 0 OID 16483)
--- Dependencies: 226
--- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: interview_db_kmnb_user
---
-
-COPY public.users (id, username, password_hash, name, created_at) FROM stdin;
-1	gildong123	hashed_password_sample	홍길동	2026-05-17 16:07:51.979105
-\.
-
-
---
--- Data for Name: interview_session; Type: TABLE DATA; Schema: public; Owner: interview_db_kmnb_user
---
-
-INSERT INTO public.interview_session (id, session_id, user_id, subject, avg_score, overall_feedback, avg_duration, status, created_at) VALUES
-(1, 'sample-session-uuid-1', 1, '소프트웨어 설계/개발', 96, '핵심 제약 조건인 무상태성과 일관된 인터페이스를 정확히 짚었습니다.', 30, 'COMPLETED', '2026-05-17 16:07:51.979105');
-
---
--- Data for Name: answer_log; Type: TABLE DATA; Schema: public; Owner: interview_db_kmnb_user
---
-
-INSERT INTO public.answer_log (id, question_id, user_answer, ai_feedback, score, session_id, missing_keywords, matched_keywords, captured_image_path, duration, created_at) VALUES
-    (1, 20, 'REST 아키텍처는 무상태성이 중요하고 일관된 인터페이스를 가집니다.', '핵심 제약 조건인 무상태성과 일관된 인터페이스를 정확히 짚었습니다.', 96, 1, NULL, '["무상태성", "일관된 인터페이스"]', '/uploads/test_user1.png', 30, '2026-05-17 16:07:51.979105');
-
-
---
--- TOC entry 4969 (class 0 OID 0)
--- Dependencies: 223
--- Name: question_keywords_id_seq; Type: SEQUENCE SET; Schema: public; Owner: interview_db_kmnb_user
---
-
 SELECT pg_catalog.setval('public.question_keywords_id_seq', 475, true);
-
-
---
--- TOC entry 4970 (class 0 OID 0)
--- Dependencies: 221
--- Name: questions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: interview_db_kmnb_user
---
-
 SELECT pg_catalog.setval('public.questions_id_seq', 160, true);
-
-
---
--- TOC entry 4971 (class 0 OID 0)
--- Dependencies: 219
--- Name: subjects_id_seq; Type: SEQUENCE SET; Schema: public; Owner: interview_db_kmnb_user
---
-
 SELECT pg_catalog.setval('public.subjects_id_seq', 4, true);
-
-
---
--- TOC entry 4972 (class 0 OID 0)
--- Dependencies: 225
--- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: interview_db_kmnb_user
---
-
-SELECT pg_catalog.setval('public.users_id_seq', 1, true);
-
-
---
--- TOC entry 4973 (class 0 OID 0)
--- Dependencies: 227
--- Name: voice_learning_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: interview_db_kmnb_user
---
-
-SELECT pg_catalog.setval('public.interview_session_id_seq', 1, true);
-SELECT pg_catalog.setval('public.answer_log_id_seq', 1, true);
+SELECT pg_catalog.setval('public.users_id_seq', 1, false);
+SELECT pg_catalog.setval('public.interview_session_id_seq', 1, false);
+SELECT pg_catalog.setval('public.answer_log_id_seq', 1, false);
 SELECT pg_catalog.setval('public.review_state_id_seq', 1, false);
 
 
---
--- TOC entry 4791 (class 2606 OID 16426)
--- Name: question_keywords question_keywords_pkey; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 ALTER TABLE ONLY public.question_keywords
     ADD CONSTRAINT question_keywords_pkey PRIMARY KEY (id);
 
 
---
--- TOC entry 4789 (class 2606 OID 16411)
--- Name: questions questions_pkey; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 ALTER TABLE ONLY public.questions
     ADD CONSTRAINT questions_pkey PRIMARY KEY (id);
 
 
---
--- TOC entry 4785 (class 2606 OID 16543)
--- Name: subjects subjects_name_key; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 ALTER TABLE ONLY public.subjects
     ADD CONSTRAINT subjects_name_key UNIQUE (name);
 
 
---
--- TOC entry 4787 (class 2606 OID 16396)
--- Name: subjects subjects_pkey; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 ALTER TABLE ONLY public.subjects
     ADD CONSTRAINT subjects_pkey PRIMARY KEY (id);
 
 
---
--- TOC entry 4793 (class 2606 OID 16493)
--- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
 
 
---
--- TOC entry 4795 (class 2606 OID 16495)
--- Name: users users_username_key; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_username_key UNIQUE (username);
 
 
---
--- Name: interview_session interview_session_pkey; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
---
+
 ALTER TABLE ONLY public.interview_session
     ADD CONSTRAINT interview_session_pkey PRIMARY KEY (id);
 
---
--- Name: interview_session interview_session_session_id_key; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
---
+
 ALTER TABLE ONLY public.interview_session
     ADD CONSTRAINT interview_session_session_id_key UNIQUE (session_id);
 
---
--- Name: answer_log answer_log_pkey; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
---
+
 ALTER TABLE ONLY public.answer_log
     ADD CONSTRAINT answer_log_pkey PRIMARY KEY (id);
 
---
--- Name: review_state review_state_pkey; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
---
+
 ALTER TABLE ONLY public.review_state
     ADD CONSTRAINT review_state_pkey PRIMARY KEY (id);
 
---
--- Name: review_state uk_review_state_user_question; Type: CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
---
+
 ALTER TABLE ONLY public.review_state
     ADD CONSTRAINT uk_review_state_user_question UNIQUE (user_id, question_id);
 
---
--- Name: interview_session fk_session_user; Type: FK CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
---
+
 ALTER TABLE ONLY public.interview_session
     ADD CONSTRAINT fk_session_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
---
--- Name: answer_log fk_log_question; Type: FK CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
---
+
 ALTER TABLE ONLY public.answer_log
     ADD CONSTRAINT fk_log_question FOREIGN KEY (question_id) REFERENCES public.questions(id) ON DELETE CASCADE;
 
---
--- Name: answer_log fk_log_session; Type: FK CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
---
+
 ALTER TABLE ONLY public.answer_log
     ADD CONSTRAINT fk_log_session FOREIGN KEY (session_id) REFERENCES public.interview_session(id) ON DELETE CASCADE;
 
---
--- Name: review_state fk_review_user; Type: FK CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
---
+
 ALTER TABLE ONLY public.review_state
     ADD CONSTRAINT fk_review_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
---
--- Name: review_state fk_review_question; Type: FK CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
---
+
 ALTER TABLE ONLY public.review_state
     ADD CONSTRAINT fk_review_question FOREIGN KEY (question_id) REFERENCES public.questions(id) ON DELETE CASCADE;
 
 
---
--- TOC entry 4799 (class 2606 OID 16427)
--- Name: question_keywords question_keywords_question_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 ALTER TABLE ONLY public.question_keywords
     ADD CONSTRAINT question_keywords_question_id_fkey FOREIGN KEY (question_id) REFERENCES public.questions(id) ON DELETE CASCADE;
 
 
---
--- TOC entry 4798 (class 2606 OID 16412)
--- Name: questions questions_subject_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: interview_db_kmnb_user
---
+
 
 ALTER TABLE ONLY public.questions
     ADD CONSTRAINT questions_subject_id_fkey FOREIGN KEY (subject_id) REFERENCES public.subjects(id) ON DELETE CASCADE;
 
 
--- Completed on 2026-05-17 16:09:58
-
---
--- PostgreSQL database dump complete
---
-
-\unrestrict Eznf0CTH93Uei6ldvHHwp91AwB7fwg8Ua7QT5phuEdC5bXMJPn7js6zqQwkSKpD
