@@ -196,7 +196,8 @@ public class InterviewService {
                         log.getScore(),
                         log.getDuration(),
                         log.getAiFeedback(),
-                        log.getMissingKeywords()
+                        log.getMissingKeywords(),
+                        log.getQuestion().getIdealAnswer()
                 )
         ).toList();
         
@@ -275,7 +276,8 @@ public class InterviewService {
                         log.getScore(),
                         log.getDuration(),
                         log.getAiFeedback(),
-                        log.getMissingKeywords()
+                        log.getMissingKeywords(),
+                        log.getQuestion().getIdealAnswer()
                 )
         ).toList();
         
