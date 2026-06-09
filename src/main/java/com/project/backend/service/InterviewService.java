@@ -209,7 +209,7 @@ public class InterviewService {
         return new InterviewDetailResponse(
                 session.getSessionId(), session.getSubject(),
                 date, avgScore, totalQuestions, excellentCount,
-                avgDuration / 60,
+                avgDuration,
                 overallFeedback != null ? overallFeedback : "",
                 results);
     }
@@ -293,7 +293,7 @@ public class InterviewService {
                 session.getSessionId(), session.getSubject(),
                 date, session.getAvgScore(),
                 totalQuestions, excellentCount,
-                (session.getAvgDuration() != null ? session.getAvgDuration() : 0) / 60,
+                session.getAvgDuration() != null ? session.getAvgDuration() : 0,
                 session.getOverallFeedback() != null ? session.getOverallFeedback() : "",
                 results);
     }

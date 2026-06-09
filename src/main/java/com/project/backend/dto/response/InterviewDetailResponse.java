@@ -10,7 +10,7 @@ public record InterviewDetailResponse(
         Integer avgScore,
         Integer totalQuestions,
         Integer excellentCount,
-        Integer avgTimeMin,
+        Integer avgTime,
         String feedback,
         List<QuestionDetailResponse> results
 ) {}
