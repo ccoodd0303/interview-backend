@@ -31,6 +31,7 @@ public class DashboardService {
         
         // 모든 면접 세션을 복습 이력 DTO로 변환
         List<DashboardHistoryResponse> records = allSessions.stream()
+                .sorted((a, b) -> a.getCreatedAt().compareTo(b.getCreatedAt()))
                 .map(session -> new DashboardHistoryResponse(
                         session.getSessionId(),
                         session.getSubject(),
