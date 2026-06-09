@@ -92,26 +92,10 @@ public class InterviewController {
     }
     
     
-    // 중단한 면접 제거
-    @DeleteMapping("/{interviewId}")
-    public ResponseEntity<Void> deleteInterview(@PathVariable String interviewId) {
-        interviewService.deleteSession(interviewId);
-        return ResponseEntity.ok().build();
-    }
-    
     // 면접 결과 조회
     @GetMapping("/{interviewId}/results")
     public ResponseEntity<InterviewDetailResponse> getInterviewResult(
             @PathVariable String interviewId) {
         return ResponseEntity.ok(interviewService.getInterviewResult(interviewId));
-    }
-    
-    // 복습하기
-    @PostMapping("/{interviewId}/retry")
-    public ResponseEntity<InterviewStartResponse> retryInterview(
-            @PathVariable String interviewId,
-            @RequestParam("userId") Long userId) {
-        
-        return ResponseEntity.ok(interviewService.retryInterview(userId, interviewId));
     }
 }

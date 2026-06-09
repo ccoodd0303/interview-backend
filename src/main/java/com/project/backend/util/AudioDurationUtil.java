@@ -27,11 +27,6 @@ public class AudioDurationUtil {
                 return 0;
             }
             
-            long size = Files.size(audioFilePath);
-            if (size < 5120) { // 5KB 미만
-                log.warn("오디오 파일 크기가 너무 작습니다. (크기: {} bytes, 경로: {})", size, audioFilePath);
-                return 0;
-            }
             
             // 임시 복구 파일 경로 생성
             String originalName = audioFilePath.getFileName().toString();

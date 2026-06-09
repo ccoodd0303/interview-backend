@@ -214,45 +214,6 @@ public class InterviewService {
                 results);
     }
     
-    // 복습할 면접 세션의 10문항을 그대로 출제
-    @Transactional
-    public InterviewStartResponse retryInterview(Long userId, String pastSessionId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        
-        List<InterviewSession> activeSessions = sessionRepository.findByUserIdAndStatusOrderByCreatedAtDesc(userId, SessionStatus.IN_PROGRESS);
-        if (!activeSessions.isEmpty()) {
-            sessionRepository.deleteAll(activeSessions);
-        }
-        
-        List<AnswerLog> pastLogs = answerLogRepository
-                .findByInterviewSession_SessionIdOrderByCreatedAtAsc(pastSessionId);
-        
-        if (pastLogs.isEmpty()) {
-            throw new IllegalArgumentException("과거 면접 이력을 찾을 수 없습니다.");
-        }
-        
-        // 면접 세션 새로 생성
-        String newSessionId = UUID.randomUUID().toString();
-        InterviewSession newSession = InterviewSession.builder()
-                .sessionId(newSessionId)
-                .user(user)
-                .subject(pastLogs.get(0).getQuestion().getSubjectName())
-                .build();
-        sessionRepository.save(newSession);
-        
-        // 과거 문제들로 문제 출제 dto 생성
-        List<QuestionResponse> questions = pastLogs.stream()
-                .map(log -> new QuestionResponse(
-                        log.getQuestion().getId(),
-                        log.getQuestion().getSubjectName(),
-                        log.getQuestion().getTitle()
-                ))
-                .toList();
-        
-        return new InterviewStartResponse(newSessionId, newSession.getSubject(), questions);
-    }
-    
     // 복습 화면과 세부 결과창에 쓸 데이터 처리
     @Transactional(readOnly = true)
     public InterviewDetailResponse getInterviewResult(String interviewId) {
@@ -323,13 +284,5 @@ public class InterviewService {
                     sm2Result.interval(), sm2Result.nextReviewDate(), today);
         }
         reviewStateRepository.save(reviewState);
-    }
-    
-    // 중단했던 면접 세션 제거
-    @Transactional
-    public void deleteSession(String interviewId) {
-        InterviewSession session = sessionRepository.findBySessionId(interviewId)
-                .orElseThrow(() -> new IllegalArgumentException("면접 세션을 찾을 수 없습니다."));
-        sessionRepository.delete(session);
     }
 }
