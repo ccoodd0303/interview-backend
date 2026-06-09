@@ -42,11 +42,11 @@ public class AudioDurationUtil {
             String fixedFilename = baseName + "_fixed.webm";
             fixedPath = audioFilePath.resolveSibling(fixedFilename);
             
-            // ffmpeg 실행하여 헤더 복구
+            // ffmpeg 실행하여 헤더 복구 및 재인코딩(libopus)
             Process ffmpegProcess = new ProcessBuilder(
                     "ffmpeg", "-y",
                     "-i", audioFilePath.toAbsolutePath().toString(),
-                    "-c", "copy",
+                    "-c:a", "libopus",
                     fixedPath.toAbsolutePath().toString()
             ).start();
             
