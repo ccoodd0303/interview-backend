@@ -41,29 +41,34 @@ public class InterviewService {
     private final AudioDurationUtil audioDurationUtil;
     
     // 새로운 면접 세션을 생성하고 지정된 과목의 문제를 출제
-    @Transactional
     public InterviewStartResponse startInterview(Long userId, String subject) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        
-        List<InterviewSession> activeSessions = sessionRepository.findByUserIdAndStatusOrderByCreatedAtDesc(userId, SessionStatus.IN_PROGRESS);
-        if (!activeSessions.isEmpty()) {
-            sessionRepository.deleteAll(activeSessions);
+        // 중복 생성을 막기 위해 synchronized로 요청을 한 줄로 세우고 및 트랜잭션 템플릿 사용
+        synchronized (userId.toString().intern()) {
+            return transactionTemplate.execute(status -> {
+                User user = userRepository.findById(userId)
+                        .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                
+                List<InterviewSession> activeSessions = sessionRepository.findByUserIdAndStatusOrderByCreatedAtDesc(userId, SessionStatus.IN_PROGRESS);
+                if (!activeSessions.isEmpty()) {
+                    sessionRepository.deleteAll(activeSessions);
+                    sessionRepository.flush(); // 이전 세션 삭제 사항을 즉시 반영
+                }
+                
+                String sessionId = UUID.randomUUID().toString();
+                InterviewSession session = InterviewSession.builder()
+                        .sessionId(sessionId).user(user).subject(subject).build();
+                sessionRepository.saveAndFlush(session); // 신규 세션 저장을 즉시 반영
+                
+                List<QuestionResponse> questions =
+                        questionService.getQuestionsBySubject(userId, subject);
+                
+                if (questions == null || questions.isEmpty()) {
+                    throw new IllegalArgumentException("해당 과목의 질문을 찾을 수 없습니다.");
+                }
+                
+                return new InterviewStartResponse(sessionId, subject, questions);
+            });
         }
-        
-        String sessionId = UUID.randomUUID().toString();
-        InterviewSession session = InterviewSession.builder()
-                .sessionId(sessionId).user(user).subject(subject).build();
-        sessionRepository.save(session);
-        
-        List<QuestionResponse> questions =
-                questionService.getQuestionsBySubject(userId, subject);
-        
-        if (questions == null || questions.isEmpty()) {
-            throw new IllegalArgumentException("해당 과목의 질문을 찾을 수 없습니다.");
-        }
-        
-        return new InterviewStartResponse(sessionId, subject, questions);
     }
     
     // 개별 문제에 대한 음성 답변을 비동기로 AI 서버에 전송하여 채점 후 DB 저장
