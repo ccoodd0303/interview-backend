@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+// 회원가입 요청 시 이메일, 비밀번호, 닉네임을 전달하는 DTO
 public record RegisterRequest(
         @Email(message = "이메일 형식이 아닙니다.")
         @NotBlank(message = "이메일은 필수입니다.")

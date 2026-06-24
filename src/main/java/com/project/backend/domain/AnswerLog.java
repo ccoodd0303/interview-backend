@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -53,6 +54,12 @@ public class AnswerLog {
     
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "answer", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<AnswerKeywordResult> keywordResults = new ArrayList<>();
+
+    @OneToMany(mappedBy = "answer", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<FollowUpAnswer> followUpAnswers = new ArrayList<>();
     
     @Builder
     private AnswerLog(Question question, String userAnswer, String aiFeedback,

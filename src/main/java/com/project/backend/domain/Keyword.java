@@ -23,13 +23,22 @@ public class Keyword {
     @Column(name = "keyword", nullable = false, length = 100)
     private String keyword;
 
-    @Column(name = "weight")
-    private Short weight = (short) 1;
+    @Column(name = "importance")
+    private Integer importance = 1;
+
+    @Column(name = "concept_description", columnDefinition = "TEXT")
+    private String conceptDescription;
+
+    @Column(name = "follow_up_question", columnDefinition = "TEXT")
+    private String followUpQuestion;
 
     @Builder
-    private Keyword(Question question, String keyword, Short weight) {
+    private Keyword(Question question, String keyword, Integer importance,
+                    String conceptDescription, String followUpQuestion) {
         this.question = question;
         this.keyword = keyword;
-        this.weight = (weight != null) ? weight : (short) 1;
+        this.importance = (importance != null) ? importance : 1;
+        this.conceptDescription = conceptDescription;
+        this.followUpQuestion = followUpQuestion;
     }
 }

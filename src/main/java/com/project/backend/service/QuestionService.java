@@ -100,4 +100,16 @@ public class QuestionService {
                 ))
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    public List<QuestionResponse> getRandomQuestionsBySubject(String subject, int questionCount) {
+        int limit = questionCount > 0 ? questionCount : 4;
+        return questionRepository.findRandomBySubjectName(subject, limit).stream()
+                .map(q -> new QuestionResponse(
+                        q.getId(),
+                        q.getSubjectName(),
+                        q.getTitle()
+                ))
+                .toList();
+    }
 }
