@@ -36,30 +36,26 @@ public class DashboardService {
     public UserInterviewsResponse getUserInterviews(Long userId) {
         
         List<InterviewSession> allSessions = sessionRepository
-                .findByUserIdAndStatusOrderByCreatedAtDesc(
+                .findByUserIdAndStatusWithAnswerLogs(
                         userId, SessionStatus.COMPLETED);
         
         // 모든 면접 세션을 복습 이력 DTO로 변환
         List<DashboardHistoryResponse> records = allSessions.stream()
                 .sorted((a, b) -> a.getCreatedAt().compareTo(b.getCreatedAt()))
-                .map(session -> {
-                    List<AnswerLog> logs = answerLogRepository
-                            .findByInterviewSession_SessionIdOrderByCreatedAtAsc(session.getSessionId());
-                    return new DashboardHistoryResponse(
-                            session.getSessionId(),
-                            session.getSubject(),
-                            session.getCreatedAt().format(FORMATTER),
-                            logs.size(),
-                            session.getAvgScore() != null ? session.getAvgScore() : 0,
-                            session.getType().name(),
-                            "general".equals(session.getMode()) ? "basic" : session.getMode(),
-                            session.getAvgScore() != null ? session.getAvgScore() : 0,
-                            session.getAttitudeScore(),
-                            session.getTotalScore() != null ? session.getTotalScore() : session.getAvgScore(),
-                            session.getNonverbal(),
-                            List.of()
-                    );
-                })
+                .map(session -> new DashboardHistoryResponse(
+                        session.getSessionId(),
+                        session.getSubject(),
+                        session.getCreatedAt().format(FORMATTER),
+                        session.getAnswerLogs().size(),
+                        session.getAvgScore() != null ? session.getAvgScore() : 0,
+                        session.getType().name(),
+                        "general".equals(session.getMode()) ? "basic" : session.getMode(),
+                        session.getAvgScore() != null ? session.getAvgScore() : 0,
+                        session.getAttitudeScore(),
+                        session.getTotalScore() != null ? session.getTotalScore() : session.getAvgScore(),
+                        session.getNonverbal(),
+                        List.of()
+                ))
                 .toList();
 
         return new UserInterviewsResponse(records);
