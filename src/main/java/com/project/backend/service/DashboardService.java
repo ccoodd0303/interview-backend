@@ -55,7 +55,7 @@ public class DashboardService {
                             results.size(),
                             session.getAvgScore() != null ? session.getAvgScore() : 0,
                             session.getType().name(),
-                            session.getMode(),
+                            "general".equals(session.getMode()) ? "basic" : session.getMode(),
                             session.getAvgScore() != null ? session.getAvgScore() : 0,
                             session.getAttitudeScore(),
                             session.getTotalScore() != null ? session.getTotalScore() : session.getAvgScore(),
@@ -81,9 +81,11 @@ public class DashboardService {
         FollowUpResponse followUp = log.getKeywordResults().stream()
                 .filter(result -> !Boolean.TRUE.equals(result.getCovered()))
                 .min(this::compareFollowUpPriority)
-                .map(AnswerKeywordResult::getKeyword)
-                .map(keyword -> new FollowUpResponse(
-                        keyword.getId(), keyword.getKeyword(), keyword.getFollowUpQuestion()))
+                .map(result -> new FollowUpResponse(
+                        result.getKeyword().getId(),
+                        result.getKeyword().getKeyword(),
+                        result.getKeyword().getFollowUpQuestion(),
+                        result.getReason()))
                 .orElse(null);
         FollowUpAnswerResponse followUpAnswer = log.getFollowUpAnswers().stream()
                 .max(Comparator.comparing(FollowUpAnswer::getId))
@@ -102,6 +104,7 @@ public class DashboardService {
                 log.getQuestion().getTitle(),
                 log.getUserAnswer(),
                 log.getScore(),
+                log.getScoreReason(),
                 log.getDuration(),
                 log.getAiFeedback(),
                 log.getMissingKeywords(),

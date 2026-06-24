@@ -33,6 +33,9 @@ public class AnswerLog {
     
     @Column
     private Integer score;
+
+    @Column(name = "score_reason", columnDefinition = "TEXT")
+    private String scoreReason;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session_id", nullable = false)
@@ -63,13 +66,14 @@ public class AnswerLog {
     
     @Builder
     private AnswerLog(Question question, String userAnswer, String aiFeedback,
-                      Integer score, InterviewSession interviewSession,
+                      Integer score, String scoreReason, InterviewSession interviewSession,
                       List<String> missingKeywords, List<String> matchedKeywords, // String -> List<String>으로 변경
                       String capturedImagePath, Integer duration) {
         this.question = question;
         this.userAnswer = userAnswer;
         this.aiFeedback = aiFeedback;
         this.score = score;
+        this.scoreReason = scoreReason != null ? scoreReason : "";
         this.interviewSession = interviewSession;
         this.missingKeywords = missingKeywords;
         this.matchedKeywords = matchedKeywords;

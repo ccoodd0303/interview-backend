@@ -24,7 +24,7 @@ public record InterviewDetailResponse(
     public InterviewDetailResponse(String interviewId, String subject, String date, Integer avgScore,
                                    Integer totalQuestions, Integer excellentCount, Integer avgTime,
                                    String feedback, List<QuestionDetailResponse> results) {
-        this(interviewId, subject, "GENERAL", "general", date, avgScore, avgScore,
+        this(interviewId, subject, "GENERAL", "basic", date, avgScore, avgScore,
                 null, avgScore, null, totalQuestions, excellentCount, avgTime, feedback, results);
     }
 }

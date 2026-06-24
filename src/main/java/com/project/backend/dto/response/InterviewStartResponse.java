@@ -11,6 +11,6 @@ public record InterviewStartResponse(
         List<QuestionResponse> questions
 ) {
     public InterviewStartResponse(String interviewId, String subject, List<QuestionResponse> questions) {
-        this(interviewId, subject, "general", "GENERAL", questions);
+        this(interviewId, subject, "basic", "GENERAL", questions);
     }
 }

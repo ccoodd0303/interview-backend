@@ -32,6 +32,10 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class InterviewService {
+    private static final String EMPTY_KEYWORD_REASON =
+            "답변이 인식되지 않아 해당 키워드의 개념 설명을 평가할 수 없습니다.";
+    private static final String REPEATED_QUESTION_KEYWORD_REASON =
+            "질문 내용을 반복한 답변으로 보여 해당 키워드의 개념 설명으로 인정하기 어렵습니다.";
 
     private final AiEvaluationService aiEvaluationService;
     private final AnswerLogRepository answerLogRepository;
@@ -124,6 +128,7 @@ public class InterviewService {
 
             String confirmedTranscribed = transcribed;
             Integer confirmedScore = score;
+            String confirmedScoreReason = aiResponse.scoreReason() != null ? aiResponse.scoreReason() : "";
             InterviewType effectiveType = requestType != null ? requestType : session.getType();
 
             AnswerLog savedLog = transactionTemplate.execute(status -> {
@@ -133,6 +138,7 @@ public class InterviewService {
                         .userAnswer(confirmedTranscribed)
                         .aiFeedback(aiResponse.feedback() != null ? aiResponse.feedback() : "")
                         .score(confirmedScore)
+                        .scoreReason(confirmedScoreReason)
                         .interviewSession(activeSession)
                         .missingKeywords(aiResponse.missingKeywords())
                         .matchedKeywords(aiResponse.matchedKeywords())
@@ -144,7 +150,7 @@ public class InterviewService {
 
             if (effectiveType != InterviewType.ADVANCED) {
                 return new AnswerSubmitResponse(savedLog.getId(), questionId, confirmedScore,
-                        confirmedTranscribed, List.of(), null);
+                        confirmedScoreReason, confirmedTranscribed, List.of(), null);
             }
 
             List<Keyword> keywords =
@@ -154,7 +160,7 @@ public class InterviewService {
             FollowUpResponse followUp = selectFollowUp(keywords, keywordResults);
 
             return new AnswerSubmitResponse(savedLog.getId(), questionId, confirmedScore,
-                    confirmedTranscribed, keywordResults, followUp);
+                    confirmedScoreReason, confirmedTranscribed, keywordResults, followUp);
         } finally {
             if (tempPath != null) {
                 try {
@@ -208,7 +214,8 @@ public class InterviewService {
                     aiEvaluationService.evaluateFollowUpAudio(audioResource, followUpQuestion);
 
             String rawTranscribed = evaluation.transcribedAnswer();
-            String transcribedAnswer = (rawTranscribed == null || rawTranscribed.trim().isEmpty()) ? "(답변 없음)" : rawTranscribed;
+            String transcribedAnswer = (rawTranscribed == null || rawTranscribed.trim().isEmpty())
+                    ? "(답변 없음)" : rawTranscribed;
             Integer score = evaluation.score() != null ? evaluation.score() : 0;
 
             FollowUpAnswer saved = transactionTemplate.execute(status ->
@@ -284,6 +291,13 @@ public class InterviewService {
 
     private List<AnswerKeywordResultResponse> saveKeywordResults(
             AnswerLog savedLog, String transcribed, List<Keyword> keywords) {
+        if (isEmptyAnswer(transcribed)) {
+            return saveZeroKeywordResults(savedLog, keywords, EMPTY_KEYWORD_REASON);
+        }
+        if (isRepeatedQuestionAnswer(transcribed)) {
+            return saveZeroKeywordResults(savedLog, keywords, REPEATED_QUESTION_KEYWORD_REASON);
+        }
+
         List<AiEvaluationService.KeywordEvaluationRequest> requests = keywords.stream()
                 .map(keyword -> new AiEvaluationService.KeywordEvaluationRequest(
                         keyword.getId(),
@@ -321,6 +335,23 @@ public class InterviewService {
                 .toList());
     }
 
+    private List<AnswerKeywordResultResponse> saveZeroKeywordResults(
+            AnswerLog savedLog, List<Keyword> keywords, String reason) {
+        return transactionTemplate.execute(status -> keywords.stream()
+                .map(keyword -> {
+                    answerKeywordResultRepository.save(AnswerKeywordResult.builder()
+                            .answer(savedLog)
+                            .keyword(keyword)
+                            .similarityScore(0)
+                            .covered(false)
+                            .reason(reason)
+                            .build());
+                    return new AnswerKeywordResultResponse(
+                            keyword.getId(), keyword.getKeyword(), 0, false, reason);
+                })
+                .toList());
+    }
+
     private FollowUpResponse selectFollowUp(List<Keyword> keywords,
                                             List<AnswerKeywordResultResponse> keywordResults) {
         Map<Long, Keyword> keywordMap = keywords.stream()
@@ -329,8 +360,15 @@ public class InterviewService {
                 .filter(result -> !Boolean.TRUE.equals(result.isCovered()))
                 .filter(result -> keywordMap.containsKey(result.keywordId()))
                 .min((left, right) -> compareFollowUpPriority(left, right, keywordMap))
-                .map(result -> keywordMap.get(result.keywordId()))
-                .map(keyword -> new FollowUpResponse(keyword.getId(), keyword.getKeyword(), keyword.getFollowUpQuestion()))
+                .map(result -> {
+                    Keyword keyword = keywordMap.get(result.keywordId());
+                    return new FollowUpResponse(
+                            keyword.getId(),
+                            keyword.getKeyword(),
+                            keyword.getFollowUpQuestion(),
+                            result.reason()
+                    );
+                })
                 .orElse(null);
     }
 
@@ -353,7 +391,7 @@ public class InterviewService {
                 session.getSessionId(),
                 session.getSubject(),
                 session.getType().name(),
-                session.getMode(),
+                "general".equals(session.getMode()) ? "basic" : session.getMode(),
                 date,
                 answerAvgScore,
                 answerAvgScore,
@@ -380,9 +418,11 @@ public class InterviewService {
         FollowUpResponse followUp = log.getKeywordResults().stream()
                 .filter(result -> !Boolean.TRUE.equals(result.getCovered()))
                 .min(this::compareFollowUpPriority)
-                .map(AnswerKeywordResult::getKeyword)
-                .map(keyword -> new FollowUpResponse(
-                        keyword.getId(), keyword.getKeyword(), keyword.getFollowUpQuestion()))
+                .map(result -> new FollowUpResponse(
+                        result.getKeyword().getId(),
+                        result.getKeyword().getKeyword(),
+                        result.getKeyword().getFollowUpQuestion(),
+                        result.getReason()))
                 .orElse(null);
         FollowUpAnswerResponse followUpAnswer = log.getFollowUpAnswers().stream()
                 .max(Comparator.comparing(FollowUpAnswer::getId))
@@ -394,6 +434,7 @@ public class InterviewService {
                 log.getQuestion().getTitle(),
                 log.getUserAnswer(),
                 log.getScore(),
+                log.getScoreReason(),
                 log.getDuration(),
                 log.getAiFeedback(),
                 log.getMissingKeywords(),
@@ -451,6 +492,24 @@ public class InterviewService {
         if (importanceCompare != 0) return importanceCompare;
 
         return Long.compare(left.getKeyword().getId(), right.getKeyword().getId());
+    }
+
+    private boolean isEmptyAnswer(String answer) {
+        if (answer == null) return true;
+        String normalized = answer.trim();
+        return normalized.isEmpty()
+                || "(답변 없음)".equals(normalized)
+                || "(응답 없음)".equals(normalized);
+    }
+
+    private boolean isRepeatedQuestionAnswer(String answer) {
+        if (answer == null) return false;
+        String normalized = answer.replaceAll("[\\s?.!,]", "");
+        return normalized.endsWith("무엇인가요")
+                || normalized.endsWith("무엇입니까")
+                || normalized.endsWith("설명해주세요")
+                || normalized.endsWith("말해주세요")
+                || normalized.endsWith("알려주세요");
     }
 
     private int calculateAverageScore(List<AnswerLog> logs) {

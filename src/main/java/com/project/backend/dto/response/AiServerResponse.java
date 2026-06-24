@@ -4,9 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
-// AI 평가 서버로부터 수신한 오디오 채점 점수, 피드백, STT 및 키워드 매칭 결과를 담는 DTO
+// AI 서버 -> 백엔드로 AI 채점 결과
 public record AiServerResponse(
         Integer score,
+        @JsonProperty("score_reason")
+        String scoreReason,
         String feedback,
         
         @JsonProperty("transcribed_answer")

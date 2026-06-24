@@ -19,7 +19,7 @@ public record DashboardHistoryResponse(
 ) {
     public DashboardHistoryResponse(String interviewId, String subject, String date,
                                     Integer totalQuestions, Integer avgScore) {
-        this(interviewId, subject, date, totalQuestions, avgScore, "GENERAL", "general",
+        this(interviewId, subject, date, totalQuestions, avgScore, "GENERAL", "basic",
                 avgScore, null, avgScore, null, List.of());
     }
 }
