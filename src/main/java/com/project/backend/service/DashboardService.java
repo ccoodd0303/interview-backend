@@ -43,16 +43,13 @@ public class DashboardService {
         List<DashboardHistoryResponse> records = allSessions.stream()
                 .sorted((a, b) -> a.getCreatedAt().compareTo(b.getCreatedAt()))
                 .map(session -> {
-                    List<QuestionDetailResponse> results = answerLogRepository
-                            .findByInterviewSession_SessionIdOrderByCreatedAtAsc(session.getSessionId())
-                            .stream()
-                            .map(this::toQuestionDetailResponse)
-                            .toList();
+                    List<AnswerLog> logs = answerLogRepository
+                            .findByInterviewSession_SessionIdOrderByCreatedAtAsc(session.getSessionId());
                     return new DashboardHistoryResponse(
                             session.getSessionId(),
                             session.getSubject(),
                             session.getCreatedAt().format(FORMATTER),
-                            results.size(),
+                            logs.size(),
                             session.getAvgScore() != null ? session.getAvgScore() : 0,
                             session.getType().name(),
                             "general".equals(session.getMode()) ? "basic" : session.getMode(),
@@ -60,7 +57,7 @@ public class DashboardService {
                             session.getAttitudeScore(),
                             session.getTotalScore() != null ? session.getTotalScore() : session.getAvgScore(),
                             session.getNonverbal(),
-                            results
+                            List.of()
                     );
                 })
                 .toList();
