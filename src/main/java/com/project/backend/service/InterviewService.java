@@ -190,6 +190,48 @@ public class InterviewService {
         return toFollowUpAnswerResponse(saved);
     }
 
+    public FollowUpAnswerResponse saveFollowUpAnswerAudio(String interviewId, Long answerId, Long keywordId,
+                                                          String followUpQuestion, Path tempPath) {
+        try {
+            InterviewSession session = sessionRepository.findBySessionId(interviewId)
+                    .orElseThrow(() -> new IllegalArgumentException("면접 세션을 찾을 수 없습니다."));
+            AnswerLog answer = answerLogRepository.findById(answerId)
+                    .orElseThrow(() -> new IllegalArgumentException("답변을 찾을 수 없습니다."));
+            if (!answer.getInterviewSession().getId().equals(session.getId())) {
+                throw new IllegalArgumentException("잘못된 면접 세션 접근입니다.");
+            }
+            Keyword keyword = keywordRepository.findById(keywordId)
+                    .orElseThrow(() -> new IllegalArgumentException("키워드를 찾을 수 없습니다."));
+
+            Resource audioResource = new FileSystemResource(tempPath.toFile());
+            FollowUpAudioEvaluationResponse evaluation =
+                    aiEvaluationService.evaluateFollowUpAudio(audioResource, followUpQuestion);
+
+            String rawTranscribed = evaluation.transcribedAnswer();
+            String transcribedAnswer = (rawTranscribed == null || rawTranscribed.trim().isEmpty()) ? "(답변 없음)" : rawTranscribed;
+            Integer score = evaluation.score() != null ? evaluation.score() : 0;
+
+            FollowUpAnswer saved = transactionTemplate.execute(status ->
+                    followUpAnswerRepository.save(FollowUpAnswer.builder()
+                            .answer(answer)
+                            .keyword(keyword)
+                            .followUpQuestion(followUpQuestion)
+                            .followUpAnswerText(transcribedAnswer)
+                            .score(score)
+                            .build())
+            );
+
+            return toFollowUpAnswerResponse(saved);
+        } finally {
+            if (tempPath != null) {
+                try {
+                    Files.deleteIfExists(tempPath);
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
     @Transactional
     public InterviewDetailResponse completeInterview(String interviewId) {
         return completeInterview(interviewId, null);

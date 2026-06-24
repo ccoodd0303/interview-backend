@@ -22,7 +22,7 @@ CREATE TABLE public.question_keywords (
                                           id bigint NOT NULL,
                                           question_id bigint,
                                           keyword character varying(100) NOT NULL,
-                                          importance smallint DEFAULT 1,
+                                          importance integer DEFAULT 1,
                                           concept_description text,
                                           follow_up_question text
 );

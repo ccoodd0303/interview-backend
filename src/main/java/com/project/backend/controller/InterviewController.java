@@ -112,6 +112,45 @@ public class InterviewController {
             @RequestBody FollowUpAnswerRequest request) {
         return ResponseEntity.ok(interviewService.saveFollowUpAnswer(interviewId, request));
     }
+
+    @PostMapping(value = "/{interviewId}/follow-up-answers/audio",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<FollowUpAnswerResponse> submitFollowUpAnswerAudio(
+            @PathVariable String interviewId,
+            @RequestParam("answerId") Long answerId,
+            @RequestParam("keywordId") Long keywordId,
+            @RequestParam("followUpQuestion") String followUpQuestion,
+            @RequestPart("audio") MultipartFile audioFile) {
+
+        Path tempPath = null;
+        try {
+            if (audioFile == null || audioFile.isEmpty()) {
+                throw new IllegalArgumentException("꼬리답변 음성 파일이 비어있거나 전송되지 않았습니다.");
+            }
+
+            String filename = audioFile.getOriginalFilename();
+            String suffix = (filename != null && filename.contains(".")) ?
+                    filename.substring(filename.lastIndexOf(".")) : ".tmp";
+            tempPath = Files.createTempFile("follow_up_", suffix);
+            audioFile.transferTo(tempPath.toFile());
+
+            return ResponseEntity.ok(interviewService.saveFollowUpAnswerAudio(
+                    interviewId, answerId, keywordId, followUpQuestion, tempPath));
+        } catch (Exception e) {
+            if (tempPath != null) {
+                try {
+                    Files.deleteIfExists(tempPath);
+                } catch (IOException ignored) {
+                }
+            }
+            if (e instanceof IllegalArgumentException) {
+                throw (IllegalArgumentException) e;
+            }
+            log.error("꼬리답변 음성 파일 처리 실패 - interviewId: {}, answerId: {}, keywordId: {}",
+                    interviewId, answerId, keywordId, e);
+            throw new IllegalArgumentException("서버에서 꼬리답변 음성 파일을 읽는 데 실패했습니다: " + e.getMessage());
+        }
+    }
     
     
     // 면접 결과 조회

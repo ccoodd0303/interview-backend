@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.project.backend.domain.AnswerLog;
 import com.project.backend.dto.response.AiServerResponse;
+import com.project.backend.dto.response.FollowUpAudioEvaluationResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -146,6 +147,29 @@ public class AiEvaluationService {
             log.warn("AI 서버 꼬리답변 채점 실패, 대체 점수 사용: {}", e.getMessage());
             int length = answerText != null ? answerText.trim().length() : 0;
             return length >= 40 ? 80 : length >= 15 ? 60 : 30;
+        }
+    }
+
+    public FollowUpAudioEvaluationResponse evaluateFollowUpAudio(Resource audioResource, String question) {
+        try {
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("audioFile", audioResource);
+            body.add("question", question != null ? question : "");
+
+            FollowUpAudioEvaluationResponse response = restClient.post()
+                    .uri("/evaluate-follow-up-audio")
+                    .contentType(MediaType.MULTIPART_FORM_DATA)
+                    .body(body)
+                    .retrieve()
+                    .body(FollowUpAudioEvaluationResponse.class);
+
+            if (response == null) {
+                return new FollowUpAudioEvaluationResponse("(답변 없음)", 0);
+            }
+            return response;
+        } catch (Exception e) {
+            log.error("AI 서버 꼬리답변 음성 평가 중 오류 발생: {}", e.getMessage());
+            throw new RuntimeException("AI 서버 통신 중 오류가 발생했습니다.");
         }
     }
 
