@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class InterviewService {
-    static final int FOLLOW_UP_SKIP_SCORE = 85;
+    private static final int FOLLOW_UP_SKIP_SCORE = 85;
 
     private static final String EMPTY_KEYWORD_REASON =
             "답변이 인식되지 않아 해당 키워드의 개념 설명을 평가할 수 없습니다.";
@@ -422,22 +422,20 @@ public class InterviewService {
                         result.getReason()
                 ))
                 .toList();
-        boolean isAdvanced = log.getInterviewSession().getType() == InterviewType.ADVANCED;
-        FollowUpResponse followUp = null;
-        if (isAdvanced && (log.getScore() == null || log.getScore() < FOLLOW_UP_SKIP_SCORE)) {
-            followUp = log.getKeywordResults().stream()
-                    .filter(result -> !Boolean.TRUE.equals(result.getCovered()))
-                    .min(this::compareFollowUpPriority)
-                    .map(result -> new FollowUpResponse(
-                            result.getKeyword().getId(),
-                            result.getKeyword().getKeyword(),
-                            result.getKeyword().getFollowUpQuestion(),
-                            result.getReason()))
-                    .orElse(null);
-        }
         FollowUpAnswerResponse followUpAnswer = log.getFollowUpAnswers().stream()
                 .max(Comparator.comparing(FollowUpAnswer::getId))
                 .map(this::toFollowUpAnswerResponse)
+                .orElse(null);
+        FollowUpResponse followUp = followUpAnswer == null
+                ? null
+                : log.getKeywordResults().stream()
+                .filter(result -> result.getKeyword().getId().equals(followUpAnswer.keywordId()))
+                .findFirst()
+                .map(result -> new FollowUpResponse(
+                        result.getKeyword().getId(),
+                        result.getKeyword().getKeyword(),
+                        followUpAnswer.followUpQuestion(),
+                        result.getReason()))
                 .orElse(null);
 
         return new QuestionDetailResponse(

@@ -72,19 +72,6 @@ public class DashboardService {
                         result.getReason()
                 ))
                 .toList();
-        boolean isAdvanced = log.getInterviewSession().getType() == InterviewType.ADVANCED;
-        FollowUpResponse followUp = null;
-        if (isAdvanced && (log.getScore() == null || log.getScore() < InterviewService.FOLLOW_UP_SKIP_SCORE)) {
-            followUp = log.getKeywordResults().stream()
-                    .filter(result -> !Boolean.TRUE.equals(result.getCovered()))
-                    .min(this::compareFollowUpPriority)
-                    .map(result -> new FollowUpResponse(
-                            result.getKeyword().getId(),
-                            result.getKeyword().getKeyword(),
-                            result.getKeyword().getFollowUpQuestion(),
-                            result.getReason()))
-                    .orElse(null);
-        }
         FollowUpAnswerResponse followUpAnswer = log.getFollowUpAnswers().stream()
                 .max(Comparator.comparing(FollowUpAnswer::getId))
                 .map(answer -> new FollowUpAnswerResponse(
@@ -95,6 +82,17 @@ public class DashboardService {
                         answer.getFollowUpAnswerText(),
                         answer.getScore()
                 ))
+                .orElse(null);
+        FollowUpResponse followUp = followUpAnswer == null
+                ? null
+                : log.getKeywordResults().stream()
+                .filter(result -> result.getKeyword().getId().equals(followUpAnswer.keywordId()))
+                .findFirst()
+                .map(result -> new FollowUpResponse(
+                        result.getKeyword().getId(),
+                        result.getKeyword().getKeyword(),
+                        followUpAnswer.followUpQuestion(),
+                        result.getReason()))
                 .orElse(null);
 
         return new QuestionDetailResponse(
