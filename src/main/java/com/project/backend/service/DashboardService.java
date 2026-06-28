@@ -5,6 +5,7 @@ import com.project.backend.domain.SessionStatus;
 import com.project.backend.domain.AnswerKeywordResult;
 import com.project.backend.domain.AnswerLog;
 import com.project.backend.domain.FollowUpAnswer;
+import com.project.backend.domain.InterviewType;
 import com.project.backend.dto.response.AnswerKeywordResultResponse;
 import com.project.backend.dto.response.DashboardHistoryResponse;
 import com.project.backend.dto.response.FollowUpAnswerResponse;
@@ -71,15 +72,19 @@ public class DashboardService {
                         result.getReason()
                 ))
                 .toList();
-        FollowUpResponse followUp = log.getKeywordResults().stream()
-                .filter(result -> !Boolean.TRUE.equals(result.getCovered()))
-                .min(this::compareFollowUpPriority)
-                .map(result -> new FollowUpResponse(
-                        result.getKeyword().getId(),
-                        result.getKeyword().getKeyword(),
-                        result.getKeyword().getFollowUpQuestion(),
-                        result.getReason()))
-                .orElse(null);
+        boolean isAdvanced = log.getInterviewSession().getType() == InterviewType.ADVANCED;
+        FollowUpResponse followUp = null;
+        if (isAdvanced && (log.getScore() == null || log.getScore() < InterviewService.FOLLOW_UP_SKIP_SCORE)) {
+            followUp = log.getKeywordResults().stream()
+                    .filter(result -> !Boolean.TRUE.equals(result.getCovered()))
+                    .min(this::compareFollowUpPriority)
+                    .map(result -> new FollowUpResponse(
+                            result.getKeyword().getId(),
+                            result.getKeyword().getKeyword(),
+                            result.getKeyword().getFollowUpQuestion(),
+                            result.getReason()))
+                    .orElse(null);
+        }
         FollowUpAnswerResponse followUpAnswer = log.getFollowUpAnswers().stream()
                 .max(Comparator.comparing(FollowUpAnswer::getId))
                 .map(answer -> new FollowUpAnswerResponse(
