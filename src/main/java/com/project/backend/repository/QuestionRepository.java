@@ -22,7 +22,7 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
             """, nativeQuery = true)
     List<Question> findRandomBySubjectName(@Param("subject") String subject, @Param("limit") int limit);
     
-    // 비동기 환경에서 db 연결 종료되어 접근 못 하는 문제 방지
+    // 비동기 스레드 내 Lazy Loading 예외 방지를 위한 연관 엔티티 패치 조인
     @Query("SELECT q FROM Question q " +
             "JOIN FETCH q.subject " +
             "LEFT JOIN FETCH q.keywords " +

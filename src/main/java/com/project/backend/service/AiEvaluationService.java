@@ -94,6 +94,7 @@ public class AiEvaluationService {
         }
     }
 
+    // 답변에서 핵심 키워드들을 제대로 설명했는지 평가
     public List<KeywordEvaluation> evaluateKeywordConcepts(
             String answerText, List<KeywordEvaluationRequest> keywords) {
         if (keywords == null || keywords.isEmpty()) {
@@ -113,9 +114,10 @@ public class AiEvaluationService {
                     .body(String.class);
 
             KeywordEvaluation[] response =
-                    objectMapper.readValue(rawResponse, KeywordEvaluation[].class);
+                     objectMapper.readValue(rawResponse, KeywordEvaluation[].class);
             return List.of(response);
         } catch (Exception e) {
+            // AI 서버 평가 실패 시, 단순 텍스트 비교 방식으로 대체 평가
             log.warn("AI 서버 키워드 의미 평가 실패, 보수적 대체 평가 사용: {}", e.getMessage());
             return keywords.stream()
                     .map(keyword -> fallbackKeywordEvaluation(answerText, keyword))
@@ -123,6 +125,7 @@ public class AiEvaluationService {
         }
     }
 
+    // 꼬리 질문 답변 채점
     public Integer scoreFollowUpAnswer(String question, String answerText) {
         try {
             Map<String, Object> body = Map.of(
@@ -144,12 +147,14 @@ public class AiEvaluationService {
             }
             return clampScore(Integer.parseInt(String.valueOf(score)));
         } catch (Exception e) {
+            // AI 서버 호출 실패 시, 답변 길이에 따라 임시 점수 부여
             log.warn("AI 서버 꼬리답변 채점 실패, 대체 점수 사용: {}", e.getMessage());
             int length = answerText != null ? answerText.trim().length() : 0;
             return length >= 40 ? 80 : length >= 15 ? 60 : 30;
         }
     }
 
+    // 꼬리 질문 음성 파일 채점
     public FollowUpAudioEvaluationResponse evaluateFollowUpAudio(Resource audioResource, String question) {
         try {
             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
@@ -173,6 +178,7 @@ public class AiEvaluationService {
         }
     }
 
+    // AI 서버 장애 시 동작하는 대체 채점 로직 (단어 일치율 기준)
     private KeywordEvaluation fallbackKeywordEvaluation(String answerText, KeywordEvaluationRequest keyword) {
         String answer = answerText != null ? answerText : "";
         String concept = keyword.conceptDescription() != null ? keyword.conceptDescription() : "";
@@ -180,6 +186,7 @@ public class AiEvaluationService {
                 .filter(token -> token.length() >= 2)
                 .filter(answer::contains)
                 .count();
+        // 키워드 단어는 들어갔으나 구체적인 설명이 부족한 경우
         boolean keywordOnly = answer.contains(keyword.keyword()) && conceptTokenMatches == 0;
         int score = keywordOnly ? 45 : (int) Math.min(95, conceptTokenMatches * 25);
         return new KeywordEvaluation(

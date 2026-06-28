@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
-// AI 서버 -> 백엔드로 AI 채점 결과
+// AI 서버로부터 수신한 채점 결과 정보
 public record AiServerResponse(
         Integer score,
         @JsonProperty("score_reason")

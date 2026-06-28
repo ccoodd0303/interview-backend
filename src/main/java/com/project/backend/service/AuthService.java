@@ -6,7 +6,7 @@ import com.project.backend.dto.request.RegisterRequest;
 import com.project.backend.dto.response.LoginResponse;
 import com.project.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.mindrot.jbcrypt.BCrypt; // BCrypt 라이브러리 임포트
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +16,7 @@ public class AuthService {
     
     private final UserRepository userRepository;
     
+    // 비밀번호 단방향 암호화 후 회원 저장
     @Transactional
     public void register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.email())) {
@@ -32,6 +33,7 @@ public class AuthService {
         userRepository.save(newUser);
     }
     
+    // 비밀번호 일치 여부 검증 및 로그인 처리
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.email())

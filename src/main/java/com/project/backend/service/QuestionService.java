@@ -23,7 +23,7 @@ public class QuestionService {
     public static final int SESSION_SIZE = 10;
     
     
-    // 과목의 문제들을 복습 알고리즘(SM-2) 우선순위에 따라 출제
+    // 과목별 문제를 SM-2 알고리즘의 복습 우선순위에 맞추어 조회
     @Transactional(readOnly = true)
     public List<QuestionResponse> getQuestionsBySubject(
             Long userId, String subject) {
@@ -40,7 +40,7 @@ public class QuestionService {
                         state -> state
                 ));
         
-        // 복습 기한이 된 문제, 처음 푸는 문제, 아직 기한이 안 된 문제로 분류
+        // 문제를 복습 대상, 신규 문제, 복습 대기 중인 문제로 분류
         List<Question> dueReviews = new ArrayList<>();
         List<Question> newQuestions = new ArrayList<>();
         List<Question> earlyReviews = new ArrayList<>();
@@ -63,7 +63,7 @@ public class QuestionService {
         }
         
         
-        // 복습 기한이 된 문제는 오래된 순, 신규 문제는 랜덤, 기한 안 된 문제는 임박한 순 정렬
+        // 그룹별 정렬 (복습 대상은 과거순, 신규는 랜덤, 대기 중인 문제는 기한 임박순)
         dueReviews.sort(Comparator.comparing(
                 q -> reviewStateMap.get(q.getId()).getNextReviewDate()
         ));

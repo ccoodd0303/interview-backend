@@ -20,12 +20,14 @@ public class AuthController {
 
     private final AuthService authService;
     
+    // 이메일 기반 회원가입
     @PostMapping("/signup")
     public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest request) {
         authService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
     
+    // 이메일 및 비밀번호 로그인
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = authService.login(request);

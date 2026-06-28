@@ -2,7 +2,7 @@ package com.project.backend.dto.response;
 
 import java.util.List;
 
-// 시작된 면접 세션의 식별 정보와 함께 출제된 문제 목록을 반환하는 DTO
+// 시작된 면접 세션 및 질문 목록 정보
 public record InterviewStartResponse(
         String interviewId,
         String subject,

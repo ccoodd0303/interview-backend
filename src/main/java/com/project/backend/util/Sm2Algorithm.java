@@ -3,16 +3,16 @@ package com.project.backend.util;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
-// 점수에 따라 다음 복습 날짜를 계산하는 SM-2 알고리즘 (복습 예상일은 출제 우선 순위 지표로 사용함)
+// SM-2 알고리즘으로 점수별 다음 복습 날짜 계산 (복습 주기로 출제 우선순위 결정)
 public class Sm2Algorithm {
     
-    // 난이도 계수의 최소값 (너무 낮으면 복습 간격이 거의 증가하지 않음)
+    // 난이도 계수의 최솟값 (이보다 낮아지면 복습 간격이 늘어나지 않음)
     private static final double MIN_EF = 1.3;
     
-    // 첫 번째 복습 간격
+    // 1차 복습 주기
     private static final int FIRST_INTERVAL = 1;
     
-    // 두 번째 복습 간격
+    // 2차 복습 주기
     private static final int SECOND_INTERVAL = 6;
     
     public static int convertScoreToGrade(int score) {
@@ -25,15 +25,15 @@ public class Sm2Algorithm {
     
     public static Sm2Result calculate(
             int repetitionCount,   // 연속 정답 횟수
-            double easinessFactor, // 체감 난이도
-            int currentInterval,   // 기존 복습 주기 (알고리즘에서 이전에 설정했던 일수)
+            double easinessFactor, // 체감 난이도 계수
+            int currentInterval,   // 기존 복습 주기 (일수)
             int score,
             LocalDate today,
             LocalDate lastReviewedDate
     ) {
         
         int q = convertScoreToGrade(score);
-        // 낮은 점수면 복습 주기를 다시 짧게 잡음
+        // 점수가 낮으면 복습 주기를 다시 단축
         if (q < 3) {
             double newEF = easinessFactor + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
             newEF = Math.max(MIN_EF, newEF);
@@ -42,7 +42,7 @@ public class Sm2Algorithm {
                     today.plusDays(FIRST_INTERVAL));
         }
         
-        // 일정 점수 이상이면 복습 주기를 늘림
+        // 점수가 높으면 복습 주기를 연장
         double newEF = easinessFactor + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
         newEF = Math.max(MIN_EF, newEF);
         
@@ -58,15 +58,15 @@ public class Sm2Algorithm {
             int actualInterval = currentInterval;
             
             if (lastReviewedDate != null) {
-                // 마지막 복습 후 지난 날짜 계산
+                // 마지막 복습 시점부터 경과한 일수 계산
                 actualInterval = (int) ChronoUnit.DAYS.between(lastReviewedDate, today);
             }
             
-            // 늦게 복습했는데도 잘 맞췄다면 실제 지난 기간을 기준으로 계산
+            // 복습 기한을 넘겨 완료했으나 점수가 높다면, 실제 지연된 일수를 반영해 주기 계산
             int baseInterval = (q >= 4 && actualInterval > currentInterval) ?
                     actualInterval : currentInterval;
             
-            // 당일 반복 학습 시 주기가 0일이 되어 날짜가 고정되는 현상을 방지
+            // 하루에 여러 번 학습해도 주기가 0일로 고정되는 현상 방지
             baseInterval = Math.max(1, baseInterval);
             
             nextInterval = (int) Math.ceil(baseInterval * newEF);

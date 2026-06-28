@@ -10,6 +10,7 @@ import java.util.Map;
 @RestController
 public class HealthCheckController {
     
+    // 애플리케이션 상태 및 JVM 메모리 사용량 조회 (서버 헬스체크)
     @GetMapping("/")
     public ResponseEntity<Map<String, Object>> healthCheck() {
         Runtime runtime = Runtime.getRuntime();

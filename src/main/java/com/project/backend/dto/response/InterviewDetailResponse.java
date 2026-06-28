@@ -3,7 +3,7 @@ package com.project.backend.dto.response;
 import java.util.List;
 import java.util.Map;
 
-// 면접의 상세 채점 결과와 종합 피드백, 비언어적 점수를 반환하는 DTO
+// 면접 상세 결과 및 종합 피드백 정보 (비언어적 지표 포함)
 public record InterviewDetailResponse(
         String interviewId,
         String subject,

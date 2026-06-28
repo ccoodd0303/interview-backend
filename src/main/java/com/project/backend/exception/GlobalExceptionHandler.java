@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(409).body(response);
     }
     
-    // fallback
+    // 처리되지 않은 나머지 모든 예외 공통 처리
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleException(Exception e) {
         log.error("처리하지 못한 예외 발생: ", e);

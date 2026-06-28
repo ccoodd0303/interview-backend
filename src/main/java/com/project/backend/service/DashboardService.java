@@ -32,7 +32,7 @@ public class DashboardService {
     private static final DateTimeFormatter FORMATTER =
             DateTimeFormatter.ofPattern("yyyy.MM.dd");
 
-    // 복습 페이지 전체 면접 이력 조회
+    // 완료된 면접 이력 목록 조회
     @Transactional(readOnly = true)
     public UserInterviewsResponse getUserInterviews(Long userId) {
         
@@ -40,7 +40,7 @@ public class DashboardService {
                 .findByUserIdAndStatusWithAnswerLogs(
                         userId, SessionStatus.COMPLETED);
         
-        // 모든 면접 세션을 복습 이력 DTO로 변환
+        // 면접 세션 데이터를 이력 화면용 DTO로 변환
         List<DashboardHistoryResponse> records = allSessions.stream()
                 .sorted((a, b) -> a.getCreatedAt().compareTo(b.getCreatedAt()))
                 .map(session -> new DashboardHistoryResponse(
@@ -111,6 +111,7 @@ public class DashboardService {
         );
     }
 
+    // 꼬리 질문을 출제할 키워드 우선순위 정렬 (점수가 낮을수록, 중요도가 높을수록, ID가 작을수록 우선)
     private int compareFollowUpPriority(AnswerKeywordResult left, AnswerKeywordResult right) {
         int scoreCompare = Integer.compare(
                 left.getSimilarityScore() != null ? left.getSimilarityScore() : 0,

@@ -2,7 +2,7 @@ package com.project.backend.dto.response;
 
 import java.util.List;
 
-// 메인 화면 하단 복습하기 리스트에 표시할 면접 이력 요약 데이터를 담는 DTO
+// 메인 화면 하단 복습하기 리스트에 표시할 면접 이력 요약 정보
 public record DashboardHistoryResponse(
         String interviewId,
         String subject,

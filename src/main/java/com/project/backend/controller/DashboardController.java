@@ -13,7 +13,7 @@ public class DashboardController {
     
     private final DashboardService dashboardService;
 
-    // 복습 페이지 전체 면접 이력 조회
+    // 사용자의 전체 면접 기록 조회 (마이페이지/복습용)
     @GetMapping("/{userId}/interviews")
     public ResponseEntity<UserInterviewsResponse> getUserInterviews(
             @PathVariable Long userId) {

@@ -29,6 +29,7 @@ public class InterviewController {
     
     private final InterviewService interviewService;
     
+    // 신규 면접 세션 시작 및 질문 조회
     @PostMapping
     public ResponseEntity<InterviewStartResponse> startInterview(
             @RequestBody InterviewStartRequest req) {
@@ -37,7 +38,7 @@ public class InterviewController {
                 InterviewType.from(req.type()), req.questionCount()));
     }
     
-    // 음성 답변 제출
+    // 사용자 음성 답변 제출 및 채점 요청
     @PostMapping(value = "/{interviewId}/answers",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> evaluateAnswer(
@@ -54,7 +55,7 @@ public class InterviewController {
                 throw new IllegalArgumentException("음성 파일이 비어있거나 전송되지 않았습니다.");
             }
             
-            // 오디오 임시 파일 생성 후 서버에 로컬 파일로 저장
+            // 전송된 음성 파일을 임시 저장하여 처리 준비
             String filename = audioFile.getOriginalFilename();
             String suffix = (filename != null && filename.contains(".")) ?
                     filename.substring(filename.lastIndexOf(".")) : ".tmp";
@@ -92,7 +93,7 @@ public class InterviewController {
         }
     }
     
-    // 면접 완료 요청
+    // 면접 세션 종료 및 종합 평가 요청
     @PostMapping("/{interviewId}/complete")
     public ResponseEntity<InterviewDetailResponse> completeInterview(
             @PathVariable String interviewId,
@@ -106,6 +107,7 @@ public class InterviewController {
         return ResponseEntity.ok(response);
     }
 
+    // 꼬리 질문에 대한 텍스트 답변 제출
     @PostMapping("/{interviewId}/follow-up-answers")
     public ResponseEntity<FollowUpAnswerResponse> submitFollowUpAnswer(
             @PathVariable String interviewId,
@@ -113,6 +115,7 @@ public class InterviewController {
         return ResponseEntity.ok(interviewService.saveFollowUpAnswer(interviewId, request));
     }
 
+    // 꼬리 질문에 대한 음성 답변 제출 및 채점
     @PostMapping(value = "/{interviewId}/follow-up-answers/audio",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<FollowUpAnswerResponse> submitFollowUpAnswerAudio(
@@ -153,7 +156,7 @@ public class InterviewController {
     }
     
     
-    // 면접 결과 조회
+    // 완료된 면접 결과 상세 조회
     @GetMapping("/{interviewId}/results")
     public ResponseEntity<InterviewDetailResponse> getInterviewResult(
             @PathVariable String interviewId) {

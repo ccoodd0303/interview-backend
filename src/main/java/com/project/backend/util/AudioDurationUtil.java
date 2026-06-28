@@ -10,7 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
-// ffmpeg/ffprobe 활용 오디오 길이 추출 유틸리티
+// ffmpeg 및 ffprobe를 사용한 오디오 재생 시간(길이) 추출 유틸리티
 @Slf4j
 @Component
 public class AudioDurationUtil {
@@ -21,14 +21,14 @@ public class AudioDurationUtil {
     public int extractDuration(Path audioFilePath) {
         Path fixedPath = null;
         try {
-            // 파일 크기 검증
+            // 비어있거나 손상된 파일인지 크기 확인
             if (audioFilePath == null || !Files.exists(audioFilePath)) {
                 log.warn("오디오 파일이 존재하지 않거나 경로가 null입니다. (경로: {})", audioFilePath);
                 return 0;
             }
             
             
-            // 임시 복구 파일 경로 생성
+            // 손상된 헤더 복구를 위한 임시 파일 경로 설정
             String originalName = audioFilePath.getFileName().toString();
             String baseName = originalName;
             if (originalName.contains(".")) {
@@ -37,7 +37,7 @@ public class AudioDurationUtil {
             String fixedFilename = baseName + "_fixed.webm";
             fixedPath = audioFilePath.resolveSibling(fixedFilename);
             
-            // ffmpeg 실행하여 헤더 복구 및 재인코딩(libopus)
+            // ffmpeg로 파일 헤더를 복구하고 opus 코덱으로 재인코딩
             Process ffmpegProcess = new ProcessBuilder(
                     "ffmpeg", "-y",
                     "-i", audioFilePath.toAbsolutePath().toString(),
@@ -55,7 +55,7 @@ public class AudioDurationUtil {
                 throw new IOException("FFmpeg process failed with exit value: " + ffmpegProcess.exitValue());
             }
             
-            // ffprobe 실행하여 오디오 길이 추출
+            // ffprobe로 오디오 재생 시간 조회
             Process ffprobeProcess = new ProcessBuilder(
                     "ffprobe", "-v", "error",
                     "-show_entries", "format=duration",
@@ -69,18 +69,18 @@ public class AudioDurationUtil {
                 throw new IOException("FFprobe duration extraction timed out");
             }
             
-            // ffprobe 결과 읽기 및 변환
+            // ffprobe 출력 결과 파싱 및 초 단위 변환
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(ffprobeProcess.getInputStream()))) {
                 
                 String result = reader.readLine();
                 
-                // N/A 방어 처리
+                // 재생 시간이 정상 출력되지 않는 경우(N/A) 예외 처리
                 if (result == null || result.isBlank() || "N/A".equalsIgnoreCase(result.trim())) {
                     return 0;
                 }
                 
-                // 반올림 후 반환
+                // 소수점 이하 반올림하여 반환
                 double parsedDuration = Double.parseDouble(result.trim());
                 return (int) Math.round(parsedDuration);
             }
@@ -89,7 +89,7 @@ public class AudioDurationUtil {
             log.error("오디오 재생 길이 추출 실패: {}", audioFilePath, e);
             return 0;
         } finally {
-            // 임시 파일 삭제
+            // 작업 완료 후 임시 파일 삭제
             if (fixedPath != null) {
                 try {
                     Files.deleteIfExists(fixedPath);
