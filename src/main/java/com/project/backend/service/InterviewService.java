@@ -532,7 +532,6 @@ public class InterviewService {
         );
     }
 
-    // compareFollowUpPriority(DTO 버전)와 동일 로직의 엔티티 버전 (현재 호출처 없음)
     private int compareFollowUpPriority(AnswerKeywordResult left, AnswerKeywordResult right) {
         int scoreCompare = Integer.compare(
                 left.getSimilarityScore() != null ? left.getSimilarityScore() : 0,
