@@ -32,6 +32,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class InterviewService {
+    private static final int FOLLOW_UP_SKIP_SCORE = 85;
+
     private static final String EMPTY_KEYWORD_REASON =
             "답변이 인식되지 않아 해당 키워드의 개념 설명을 평가할 수 없습니다.";
     private static final String REPEATED_QUESTION_KEYWORD_REASON =
@@ -157,7 +159,7 @@ public class InterviewService {
                     keywordRepository.findByQuestionIdOrderByImportanceDescIdAsc(questionId);
             List<AnswerKeywordResultResponse> keywordResults =
                     saveKeywordResults(savedLog, confirmedTranscribed, keywords);
-            FollowUpResponse followUp = selectFollowUp(keywords, keywordResults);
+            FollowUpResponse followUp = selectFollowUp(keywords, keywordResults, confirmedScore);
 
             return new AnswerSubmitResponse(savedLog.getId(), questionId, confirmedScore,
                     confirmedScoreReason, confirmedTranscribed, keywordResults, followUp);
@@ -353,7 +355,12 @@ public class InterviewService {
     }
 
     private FollowUpResponse selectFollowUp(List<Keyword> keywords,
-                                            List<AnswerKeywordResultResponse> keywordResults) {
+                                            List<AnswerKeywordResultResponse> keywordResults,
+                                            Integer answerScore) {
+        if (answerScore != null && answerScore >= FOLLOW_UP_SKIP_SCORE) {
+            return null;
+        }
+
         Map<Long, Keyword> keywordMap = keywords.stream()
                 .collect(Collectors.toMap(Keyword::getId, Function.identity()));
         return keywordResults.stream()
